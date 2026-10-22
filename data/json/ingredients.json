@@ -1,0 +1,674 @@
+[
+  {
+    "id": 1,
+    "vn_name": "Trứng",
+    "en_name": "Egg",
+    "description": "",
+    "image": "data/ingredients/01_egg.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 2,
+    "vn_name": "Đường",
+    "en_name": "Sugar",
+    "description": "",
+    "image": "data/ingredients/02_sugar.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 3,
+    "vn_name": "Bột mì",
+    "en_name": "Flour",
+    "description": "",
+    "image": "data/ingredients/03_flour.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 4,
+    "vn_name": "Gạo",
+    "en_name": "Rice",
+    "description": "",
+    "image": "data/ingredients/04_rice.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 5,
+    "vn_name": "Mì Ý",
+    "en_name": "Spaghetti",
+    "description": "",
+    "image": "data/ingredients/05_spaghetti.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 6,
+    "vn_name": "Dầu ô liu",
+    "en_name": "Olive Oil",
+    "description": "",
+    "image": "data/ingredients/06_olive_oil.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 7,
+    "vn_name": "Tương ớt",
+    "en_name": "Chili Sauce",
+    "description": "",
+    "image": "data/ingredients/07_chili_sauce.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 8,
+    "vn_name": "Tiêu",
+    "en_name": "Pepper",
+    "description": "",
+    "image": "data/ingredients/08_pepper.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 9,
+    "vn_name": "Đậu đóng hộp",
+    "en_name": "Canned Beans",
+    "description": "",
+    "image": "data/ingredients/09_canned_beans.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 10,
+    "vn_name": "Mật ong",
+    "en_name": "Honey",
+    "description": "",
+    "image": "data/ingredients/10_honey.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 11,
+    "vn_name": "Đồng hồ",
+    "en_name": "Clock",
+    "description": "",
+    "image": "data/ingredients/11_clock.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 12,
+    "vn_name": "Dao",
+    "en_name": "Knife",
+    "description": "",
+    "image": "data/ingredients/12_knife.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 13,
+    "vn_name": "Cây cán bột",
+    "en_name": "Rolling Pin",
+    "description": "",
+    "image": "data/ingredients/13_rolling_pin.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 14,
+    "vn_name": "Phới đánh trứng",
+    "en_name": "Whisk",
+    "description": "",
+    "image": "data/ingredients/14_whisk.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 15,
+    "vn_name": "Miếng bọt biển",
+    "en_name": "Sponge",
+    "description": "",
+    "image": "data/ingredients/15_sponge.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 16,
+    "vn_name": "Nước rửa chén",
+    "en_name": "Dish Soap",
+    "description": "",
+    "image": "data/ingredients/16_dish_soap.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 17,
+    "vn_name": "Táo",
+    "en_name": "Apples",
+    "description": "",
+    "image": "data/ingredients/17_apples.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 18,
+    "vn_name": "Chuối",
+    "en_name": "Bananas",
+    "description": "",
+    "image": "data/ingredients/18_bananas.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 19,
+    "vn_name": "Dứa",
+    "en_name": "Pineapples",
+    "description": "",
+    "image": "data/ingredients/19_pineapples.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 20,
+    "vn_name": "Chanh vàng",
+    "en_name": "Lemons",
+    "description": "",
+    "image": "data/ingredients/20_lemons.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 21,
+    "vn_name": "Cam",
+    "en_name": "Oranges",
+    "description": "",
+    "image": "data/ingredients/21_oranges.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 22,
+    "vn_name": "Khoai tây",
+    "en_name": "Potatoes",
+    "description": "",
+    "image": "data/ingredients/22_potatoes.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 23,
+    "vn_name": "Cà rốt",
+    "en_name": "Carrots",
+    "description": "",
+    "image": "data/ingredients/23_carrots.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 24,
+    "vn_name": "Hành tây",
+    "en_name": "Onions",
+    "description": "",
+    "image": "data/ingredients/24_onions.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 25,
+    "vn_name": "Tỏi",
+    "en_name": "Garlic",
+    "description": "",
+    "image": "data/ingredients/25_garlic.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 26,
+    "vn_name": "Ớt chuông",
+    "en_name": "Bell Peppers",
+    "description": "",
+    "image": "data/ingredients/26_bell_peppers.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 27,
+    "vn_name": "Cà tím",
+    "en_name": "Eggplants",
+    "description": "",
+    "image": "data/ingredients/27_eggplants.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 28,
+    "vn_name": "Nấm",
+    "en_name": "Mushroom",
+    "description": "",
+    "image": "data/ingredients/28_mushroom.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 29,
+    "vn_name": "Thịt xông khói",
+    "en_name": "Bacon",
+    "description": "",
+    "image": "data/ingredients/29_bacon.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 30,
+    "vn_name": "Sườn heo",
+    "en_name": "Pork Ribs",
+    "description": "",
+    "image": "data/ingredients/30_pork_ribs.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 31,
+    "vn_name": "Thịt bò bít tết",
+    "en_name": "Beef Steak",
+    "description": "",
+    "image": "data/ingredients/31_beef_steak.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 32,
+    "vn_name": "Ức gà",
+    "en_name": "Chicken Breast",
+    "description": "",
+    "image": "data/ingredients/32_chicken_breast.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 33,
+    "vn_name": "Sữa",
+    "en_name": "Milk",
+    "description": "",
+    "image": "data/ingredients/33_milk.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 34,
+    "vn_name": "Bơ",
+    "en_name": "Butter",
+    "description": "",
+    "image": "data/ingredients/34_butter.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 35,
+    "vn_name": "Phô mai",
+    "en_name": "Cheese",
+    "description": "",
+    "image": "data/ingredients/35_cheese.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 36,
+    "vn_name": "Nước ngọt có ga",
+    "en_name": "Soda",
+    "description": "",
+    "image": "data/ingredients/36_soda.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 37,
+    "vn_name": "Phô mai xanh",
+    "en_name": "Blue Cheese",
+    "description": "",
+    "image": "data/ingredients/37_blue_cheese.png",
+    "made_from": [
+      "Cheese",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Phô mai",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 38,
+    "vn_name": "Phô mai ricotta",
+    "en_name": "Ricotta Cheese",
+    "description": "",
+    "image": "data/ingredients/38_ricotta_cheese.png",
+    "made_from": [
+      "Yogurt",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Sữa chua",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 39,
+    "vn_name": "Sữa chua",
+    "en_name": "Yogurt",
+    "description": "",
+    "image": "data/ingredients/39_yogurt.png",
+    "made_from": [
+      "Milk",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Sữa",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 40,
+    "vn_name": "Giấm táo",
+    "en_name": "Apple Cider Vinegar",
+    "description": "",
+    "image": "data/ingredients/40_apple_cider_vinegar.png",
+    "made_from": [
+      "Apples",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Táo",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 41,
+    "vn_name": "Tôm",
+    "en_name": "Shrimp",
+    "description": "",
+    "image": "data/ingredients/41_shrimp.png",
+    "made_from": [
+      "Rice",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Gạo",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 42,
+    "vn_name": "Cá ngừ",
+    "en_name": "Tuna",
+    "description": "",
+    "image": "data/ingredients/42_tuna.png",
+    "made_from": [
+      "Canned Beans",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Đậu đóng hộp",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 43,
+    "vn_name": "Cá hồi",
+    "en_name": "Salmon",
+    "description": "",
+    "image": "data/ingredients/43_salmon.png",
+    "made_from": [
+      "Apples",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Táo",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 44,
+    "vn_name": "Cua",
+    "en_name": "Crab",
+    "description": "",
+    "image": "data/ingredients/44_crab.png",
+    "made_from": [
+      "Chicken Breast",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Ức gà",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 45,
+    "vn_name": "Cá piranha",
+    "en_name": "Piranha",
+    "description": "",
+    "image": "data/ingredients/45_piranha.png",
+    "made_from": [
+      "Rat",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Chuột",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 46,
+    "vn_name": "Hàu",
+    "en_name": "Oyster",
+    "description": "",
+    "image": "data/ingredients/46_oyster.png",
+    "made_from": [
+      "Olive Oil",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Dầu ô liu",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 47,
+    "vn_name": "Sò điệp",
+    "en_name": "Scallop",
+    "description": "",
+    "image": "data/ingredients/47_scallop.png",
+    "made_from": [
+      "Honey",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Mật ong",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 48,
+    "vn_name": "Tôm hùm",
+    "en_name": "Lobster",
+    "description": "",
+    "image": "data/ingredients/48_lobster.png",
+    "made_from": [
+      "Piranha",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Cá piranha",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 49,
+    "vn_name": "Chim bồ câu",
+    "en_name": "Pigeon",
+    "description": "",
+    "image": "data/ingredients/49_pigeon.png",
+    "made_from": [
+      "Olive Oil",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Dầu ô liu",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 50,
+    "vn_name": "Quạ",
+    "en_name": "Crow",
+    "description": "",
+    "image": "data/ingredients/50_crow.png",
+    "made_from": [
+      "Chicken Breast",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Ức gà",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 51,
+    "vn_name": "Chuột",
+    "en_name": "Rat",
+    "description": "",
+    "image": "data/ingredients/51_rat.png",
+    "made_from": [
+      "Blue Cheese",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Phô mai xanh",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 52,
+    "vn_name": "Dơi",
+    "en_name": "Bat",
+    "description": "",
+    "image": "data/ingredients/52_bat.png",
+    "made_from": [
+      "Garlic",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Tỏi",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 53,
+    "vn_name": "Vịt",
+    "en_name": "Duck",
+    "description": "",
+    "image": "data/ingredients/53_duck.png",
+    "made_from": [
+      "Shrimp",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Tôm",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 54,
+    "vn_name": "Ong",
+    "en_name": "Bees",
+    "description": "",
+    "image": "data/ingredients/54_bees.png",
+    "made_from": [
+      "Honey",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Mật ong",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 55,
+    "vn_name": "Giày cũ",
+    "en_name": "Old Shoes",
+    "description": "",
+    "image": "data/ingredients/55_old_shoes.png",
+    "made_from": [
+      "Onions",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Hành tây",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 56,
+    "vn_name": "Sao biển",
+    "en_name": "Star Fish",
+    "description": "",
+    "image": "data/ingredients/56_star_fish.png",
+    "made_from": [
+      "Sponge",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Miếng bọt biển",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 57,
+    "vn_name": "Bạch tuộc",
+    "en_name": "Octopus",
+    "description": "",
+    "image": "data/ingredients/57_octopus.png",
+    "made_from": [
+      "Star Fish",
+      "Sink"
+    ],
+    "vn_made_from": [
+      "Sao biển",
+      "Bồn rửa"
+    ]
+  },
+  {
+    "id": 58,
+    "vn_name": "Ếch",
+    "en_name": "Frog",
+    "description": "",
+    "image": "data/ingredients/58_frog.png",
+    "made_from": [
+      "Bees",
+      "Windows"
+    ],
+    "vn_made_from": [
+      "Ong",
+      "Cửa sổ"
+    ]
+  },
+  {
+    "id": 59,
+    "vn_name": "Bồn rửa",
+    "en_name": "Sink",
+    "description": "",
+    "image": "data/ingredients/59_sink.png",
+    "made_from": [],
+    "vn_made_from": []
+  },
+  {
+    "id": 60,
+    "vn_name": "Cửa sổ",
+    "en_name": "Windows",
+    "description": "",
+    "image": "data/ingredients/60_windows.png",
+    "made_from": [],
+    "vn_made_from": []
+  }
+]
