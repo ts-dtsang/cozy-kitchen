@@ -1,0 +1,433 @@
+[
+ {
+  "name": "Egg",
+  "tags": [
+   "Eggs"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Sugar",
+  "tags": [
+   "Sweet"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Flour",
+  "tags": [
+   "Starch"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Rice",
+  "tags": [
+   "Starch"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Spaghetti",
+  "tags": [
+   "Starch"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Olive Oil",
+  "tags": [
+   "Liquid"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Chili Sauce",
+  "tags": [
+   "Liquid",
+   "Spicy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Pepper",
+  "tags": [
+   "Spicy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Canned Beans",
+  "tags": [
+   "Veggie",
+   "Starch"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Honey",
+  "tags": [
+   "Sweet"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Clock",
+  "tags": [
+   "Tool"
+  ],
+  "auto_unlock": true
+ },
+ {
+  "name": "Knife",
+  "tags": [
+   "Tool",
+   "Creepy"
+  ],
+  "auto_unlock": true
+ },
+ {
+  "name": "Rolling Pin",
+  "tags": [
+   "Tool"
+  ],
+  "auto_unlock": true
+ },
+ {
+  "name": "Whisk",
+  "tags": [
+   "Tool"
+  ],
+  "auto_unlock": true
+ },
+ {
+  "name": "Sponge",
+  "tags": [
+   "Tool",
+   "Creepy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Dish Soap",
+  "tags": [
+   "Liquid",
+   "Creepy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Apples",
+  "tags": [
+   "Fruit"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Bananas",
+  "tags": [
+   "Fruit"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Pineapples",
+  "tags": [
+   "Fruit",
+   "Sour"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Lemons",
+  "tags": [
+   "Fruit",
+   "Sour"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Oranges",
+  "tags": [
+   "Fruit",
+   "Sweet",
+   "Sour"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Potatoes",
+  "tags": [
+   "Veggie",
+   "Starch"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Carrots",
+  "tags": [
+   "Veggie"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Onions",
+  "tags": [
+   "Veggie"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Garlic",
+  "tags": [
+   "Veggie"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Bell Peppers",
+  "tags": [
+   "Veggie"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Eggplants",
+  "tags": [
+   "Veggie"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Mushroom",
+  "tags": [
+   "Veggie"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Bacon",
+  "tags": [
+   "Meat"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Pork Ribs",
+  "tags": [
+   "Meat"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Beef Steak",
+  "tags": [
+   "Meat"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Chicken Breast",
+  "tags": [
+   "Meat"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Milk",
+  "tags": [
+   "Dairy",
+   "Milks",
+   "Liquid"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Butter",
+  "tags": [
+   "Dairy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Cheese",
+  "tags": [
+   "Dairy",
+   "Cheeses"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Soda",
+  "tags": [
+   "Liquid",
+   "Sour"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Blue Cheese",
+  "tags": [
+   "Dairy",
+   "Creepy",
+   "Cheeses"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Ricotta Cheese",
+  "tags": [
+   "Dairy",
+   "Cheeses"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Yogurt",
+  "tags": [
+   "Dairy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Apple Cider Vinegar",
+  "tags": [
+   "Liquid",
+   "Sour"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Shrimp",
+  "tags": [
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Tuna",
+  "tags": [
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Salmon",
+  "tags": [
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Crab",
+  "tags": [
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Piranha",
+  "tags": [
+   "Creepy",
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Oyster",
+  "tags": [
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Scallop",
+  "tags": [
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Lobster",
+  "tags": [
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Pigeon",
+  "tags": [
+   "Meat"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Crow",
+  "tags": [
+   "Meat",
+   "Creepy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Rat",
+  "tags": [
+   "Meat",
+   "Creepy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Bat",
+  "tags": [
+   "Meat",
+   "Creepy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Duck",
+  "tags": [
+   "Meat"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Bees",
+  "tags": [
+   "Creepy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Old Shoes",
+  "tags": [
+   "Tool",
+   "Creepy"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Starfish",
+  "tags": [
+   "Creepy",
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Octopus",
+  "tags": [
+   "Seafood"
+  ],
+  "auto_unlock": false
+ },
+ {
+  "name": "Frog",
+  "tags": [
+   "Meat",
+   "Creepy"
+  ],
+  "auto_unlock": false
+ }
+]
