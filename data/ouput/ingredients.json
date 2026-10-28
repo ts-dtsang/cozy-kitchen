@@ -1,0 +1,549 @@
+[
+    {
+        "name": "Egg",
+        "tags": [
+            "Eggs"
+        ],
+        "auto_unlock": false,
+        "description": "The ultimate culinary savior for your empty wallet before payday. Versatile, cheap, and fragile.",
+        "image": "images/ingredients/egg.png"
+    },
+    {
+        "name": "Sugar",
+        "tags": [
+            "Sweet"
+        ],
+        "auto_unlock": false,
+        "description": "Sweet, crystalline dopamine. Stickier than your ex and guaranteed to give you an instant cavity.",
+        "image": "images/ingredients/sugar.png"
+    },
+    {
+        "name": "Flour",
+        "tags": [
+            "Starch"
+        ],
+        "auto_unlock": false,
+        "description": "Powdered chaos. It gets on your face, your clothes, and makes everything thicker—including your waistline.",
+        "image": "images/ingredients/flour.png"
+    },
+    {
+        "name": "Rice",
+        "tags": [
+            "Starch"
+        ],
+        "auto_unlock": false,
+        "description": "Fluffy white grains. The literal blank canvas of the food world. Respect the grains or face Asian wrath!",
+        "image": "images/ingredients/rice.png"
+    },
+    {
+        "name": "Spaghetti",
+        "tags": [
+            "Starch"
+        ],
+        "auto_unlock": false,
+        "description": "Naked Italian noodles. Currently locked in a straight line, just waiting for hot water to make them wild.",
+        "image": "images/ingredients/spaghetti.png"
+    },
+    {
+        "name": "Olive Oil",
+        "tags": [
+            "Liquid"
+        ],
+        "auto_unlock": false,
+        "description": "Liquid Mediterranean sunshine. Drink a shot of this if you want your digestive tract to become a slip-and-slide.",
+        "image": "images/ingredients/olive_oil.png"
+    },
+    {
+        "name": "Chili Sauce",
+        "tags": [
+            "Liquid",
+            "Spicy"
+        ],
+        "auto_unlock": false,
+        "description": "Pure, unadulterated fire. Keep a fire extinguisher and a cold gallon of milk within arm's reach.",
+        "image": "images/ingredients/chili_sauce.png"
+    },
+    {
+        "name": "Pepper",
+        "tags": [
+            "Spicy"
+        ],
+        "auto_unlock": false,
+        "description": "Tiny black dust that makes your steak taste premium and your nose violently explode in sneezes.",
+        "image": "images/ingredients/pepper.png"
+    },
+    {
+        "name": "Canned Beans",
+        "tags": [
+            "Veggie",
+            "Starch"
+        ],
+        "auto_unlock": false,
+        "description": "The musical fruit! Eat a can of these to instantly transform into a campfire-loving cowboy.",
+        "image": "images/ingredients/canned_beans.png"
+    },
+    {
+        "name": "Honey",
+        "tags": [
+            "Sweet"
+        ],
+        "auto_unlock": false,
+        "description": "Sticky bee spit that never expires. Technically stolen life savings, but it tastes way too good to care.",
+        "image": "images/ingredients/honey.png"
+    },
+    {
+        "name": "Clock",
+        "tags": [
+            "Tool"
+        ],
+        "auto_unlock": true,
+        "description": "Ticking metallic stress. Tells you exactly how much time you’ve wasted trying to cook instead of doing quests.",
+        "image": "images/ingredients/clock.png"
+    },
+    {
+        "name": "Knife",
+        "tags": [
+            "Tool",
+            "Creepy"
+        ],
+        "auto_unlock": true,
+        "description": "Sharp, shiny, and pointy. Excellent for dicing onions, terrible for scratching your back. Handle with care!",
+        "image": "images/ingredients/knife.png"
+    },
+    {
+        "name": "Rolling Pin",
+        "tags": [
+            "Tool"
+        ],
+        "auto_unlock": true,
+        "description": "A heavy wooden cylinder. Used for flattening dough, crushing spices, or threatening bad customers.",
+        "image": "images/ingredients/rolling_pin.png"
+    },
+    {
+        "name": "Whisk",
+        "tags": [
+            "Tool"
+        ],
+        "auto_unlock": true,
+        "description": "A metal cage on a stick. It spins things around real fast until your arm goes completely numb.",
+        "image": "images/ingredients/whisk.png"
+    },
+    {
+        "name": "Sponge",
+        "tags": [
+            "Tool",
+            "Creepy"
+        ],
+        "auto_unlock": false,
+        "description": "A squishy plastic brick. Smells like old water and exists purely to erase your kitchen failures.",
+        "image": "images/ingredients/sponge.png"
+    },
+    {
+        "name": "Dish Soap",
+        "tags": [
+            "Liquid",
+            "Creepy"
+        ],
+        "auto_unlock": false,
+        "description": "Neon-colored chemical goo. Turns grease into bubbles and makes everything taste like a hospital visit.",
+        "image": "images/ingredients/dish_soap.png"
+    },
+    {
+        "name": "Apples",
+        "tags": [
+            "Fruit"
+        ],
+        "auto_unlock": false,
+        "description": "Crisp, juicy, and sweet. Keeps the doctor away, assuming your aim is good enough to hit them.",
+        "image": "images/ingredients/apples.png"
+    },
+    {
+        "name": "Bananas",
+        "tags": [
+            "Fruit"
+        ],
+        "auto_unlock": false,
+        "description": "Conveniently pre-wrapped yellow mush. High in potassium, great for slips, and loved by monkeys and gym bros.",
+        "image": "images/ingredients/bananas.png"
+    },
+    {
+        "name": "Pineapples",
+        "tags": [
+            "Fruit",
+            "Sour"
+        ],
+        "auto_unlock": false,
+        "description": "A fruit wearing a spiky crown. Tastes amazing, but contains enzymes that actively try to eat you back.",
+        "image": "images/ingredients/pineapples.png"
+    },
+    {
+        "name": "Lemons",
+        "tags": [
+            "Fruit",
+            "Sour"
+        ],
+        "auto_unlock": false,
+        "description": "Nature's yellow sour bomb. When life gives you these, squeeze them into your enemies' eyes.",
+        "image": "images/ingredients/lemons.png"
+    },
+    {
+        "name": "Oranges",
+        "tags": [
+            "Fruit",
+            "Sweet",
+            "Sour"
+        ],
+        "auto_unlock": false,
+        "description": "Opaque balls of liquid sunshine. Peeling them is a test of patience, but the sugar rush is worth it.",
+        "image": "images/ingredients/oranges.png"
+    },
+    {
+        "name": "Potatoes",
+        "tags": [
+            "Veggie",
+            "Starch"
+        ],
+        "auto_unlock": false,
+        "description": "Dirt-covered lumps of pure potential. Can become fries, chips, vodka, or your teammate’s brain.",
+        "image": "images/ingredients/potatoes.png"
+    },
+    {
+        "name": "Carrots",
+        "tags": [
+            "Veggie"
+        ],
+        "auto_unlock": false,
+        "description": "Crunchy orange sticks that supposedly help you see in the dark. Bugs Bunny's favorite weapon.",
+        "image": "images/ingredients/carrots.png"
+    },
+    {
+        "name": "Onions",
+        "tags": [
+            "Veggie"
+        ],
+        "auto_unlock": false,
+        "description": "An edible flashbang. It has layers, it has flavor, and it will absolutely make you cry like a baby.",
+        "image": "images/ingredients/onions.png"
+    },
+    {
+        "name": "Garlic",
+        "tags": [
+            "Veggie"
+        ],
+        "auto_unlock": false,
+        "description": "Deliciously aromatic cloves. Keeps your food tasting gourmet and ensures vampires stay 50 feet away.",
+        "image": "images/ingredients/garlic.png"
+    },
+    {
+        "name": "Bell Peppers",
+        "tags": [
+            "Veggie"
+        ],
+        "auto_unlock": false,
+        "description": "Colorful, hollow veggies. They look spicy but are actually sweet and empty inside—just like my hopes.",
+        "image": "images/ingredients/bell_peppers.png"
+    },
+    {
+        "name": "Eggplants",
+        "tags": [
+            "Veggie"
+        ],
+        "auto_unlock": false,
+        "description": "A glossy purple vegetable. Mostly used as a suggestive emoji, but behaves surprisingly well on a grill.",
+        "image": "images/ingredients/eggplants.png"
+    },
+    {
+        "name": "Mushroom",
+        "tags": [
+            "Veggie"
+        ],
+        "auto_unlock": false,
+        "description": "Fungi harvested from the damp dark. 50% chance it makes a great soup, 50% chance you see God.",
+        "image": "images/ingredients/mushroom.png"
+    },
+    {
+        "name": "Bacon",
+        "tags": [
+            "Meat"
+        ],
+        "auto_unlock": false,
+        "description": "Crispy strips of cured pork fat. The loudest crunch and the best smell in the entire galaxy.",
+        "image": "images/ingredients/bacon.png"
+    },
+    {
+        "name": "Pork Ribs",
+        "tags": [
+            "Meat"
+        ],
+        "auto_unlock": false,
+        "description": "Thick meat on sturdy bones. Guaranteed to cover your entire face and fingers in sticky BBQ sauce.",
+        "image": "images/ingredients/pork_ribs.png"
+    },
+    {
+        "name": "Beef Steak",
+        "tags": [
+            "Meat"
+        ],
+        "auto_unlock": false,
+        "description": "A premium cut of red meat. Treat it with respect, sear it hot, and never, ever make it well-done.",
+        "image": "images/ingredients/beef_steak.png"
+    },
+    {
+        "name": "Chicken Breast",
+        "tags": [
+            "Meat"
+        ],
+        "auto_unlock": false,
+        "description": "Lean, bland, and unseasoned. Gym bros love it, flavor hates it, but your muscles need it.",
+        "image": "images/ingredients/chicken_breast.png"
+    },
+    {
+        "name": "Milk",
+        "tags": [
+            "Dairy",
+            "Milks",
+            "Liquid"
+        ],
+        "auto_unlock": false,
+        "description": "Liquid calcium straight from the cow. Warm it up to cure insomnia, or pour it over cereal to spawn happiness.",
+        "image": "images/ingredients/milk.png"
+    },
+    {
+        "name": "Butter",
+        "tags": [
+            "Dairy"
+        ],
+        "auto_unlock": false,
+        "description": "Pure solid dairy fat. The secret ingredient that makes restaurant food taste better than your home cooking.",
+        "image": "images/ingredients/butter.png"
+    },
+    {
+        "name": "Cheese",
+        "tags": [
+            "Dairy",
+            "Cheeses"
+        ],
+        "auto_unlock": false,
+        "description": "Coagulated milk gold. Melts beautifully, stretches infinitely, and makes literally any dish 10 times better.",
+        "image": "images/ingredients/cheese.png"
+    },
+    {
+        "name": "Soda",
+        "tags": [
+            "Liquid",
+            "Sour"
+        ],
+        "auto_unlock": false,
+        "description": "Liquid carbonated static. Packed with enough sugar to make your teeth vibrate and your energy levels skyrocket.",
+        "image": "images/ingredients/soda.png"
+    },
+    {
+        "name": "Blue Cheese",
+        "tags": [
+            "Dairy",
+            "Creepy",
+            "Cheeses"
+        ],
+        "auto_unlock": false,
+        "description": "Coagulated milk gold... with an intentional moldy twist. Looks highly questionable and smells intensely pungent, but tastes like absolute luxury to the brave.",
+        "image": "images/ingredients/blue_cheese.png"
+    },
+    {
+        "name": "Ricotta Cheese",
+        "tags": [
+            "Dairy",
+            "Cheeses"
+        ],
+        "auto_unlock": false,
+        "description": "A fluffy, snowy white whey cheese cloud. Incredibly soft, creamy, and mild enough to be smuggled into both savory pastas and sweet desserts.",
+        "image": "images/ingredients/ricotta_cheese.png"
+    },
+    {
+        "name": "Yogurt",
+        "tags": [
+            "Dairy"
+        ],
+        "auto_unlock": false,
+        "description": "Tangy, creamy milk goo packed with good bacteria. It wants so badly to be ice cream, but its healthy conscience forces it to remain a breakfast snack.",
+        "image": "images/ingredients/yogurt.png"
+    },
+    {
+        "name": "Apple Cider Vinegar",
+        "tags": [
+            "Liquid",
+            "Sour"
+        ],
+        "auto_unlock": false,
+        "description": "A sharp, tongue-twisting sour tonic. One sniff will violently clear your sinuses; one drop will punch a lazy dish right in the face with flavor.",
+        "image": "images/ingredients/apple_cider_vinegar.png"
+    },
+    {
+        "name": "Shrimp",
+        "tags": [
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A tiny, translucent sea bug with long twitchy feelers. Plump, sweet, and highly addictive once you peel off its armor",
+        "image": "images/ingredients/shrimp.png"
+    },
+    {
+        "name": "Tuna",
+        "tags": [
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A massive, torpedo-shaped ocean titan. It is a solid muscle machine of the deep sea, ready to yield an absolute mountain of rich red meat.",
+        "image": "images/ingredients/tuna.png"
+    },
+    {
+        "name": "Salmon",
+        "tags": [
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A majestic, silver-scaled fish fresh from leaping up wild rivers. Beneath its sleek scales lies that signature bright pink, oil-rich flesh.",
+        "image": "images/ingredients/salmon.png"
+    },
+    {
+        "name": "Crab",
+        "tags": [
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A grumpy coastal warrior waving two massive pinching claws. It walks sideways, glares at you, and relies on its rock-hard armor to protect its sweet meat.",
+        "image": "images/ingredients/crab.png"
+    },
+    {
+        "name": "Piranha",
+        "tags": [
+            "Creepy",
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A ferocious river monster with a severe underbite and razor-sharp teeth. Cooking it whole is a satisfying act of revenge for your bitten fingers.",
+        "image": "images/ingredients/piranha.png"
+    },
+    {
+        "name": "Oyster",
+        "tags": [
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A rough, rocky, rugged shell that looks like a piece of ocean debris. Pry it open to find a plump, glistening creature swimming in pure sea essence.",
+        "image": "images/ingredients/oyster.png"
+    },
+    {
+        "name": "Scallop",
+        "tags": [
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A fan-shelled mollusk that zips through the water by clapping its shells together. Inside rests a single, prized, buttery-soft cylinder of pure luxury.",
+        "image": "images/ingredients/scallop.png"
+    },
+    {
+        "name": "Lobster",
+        "tags": [
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "The undisputed armored monarch of the seabed. Features crushing claws, long majestic antennae, and a dense, heavy tail built for high-society dining.",
+        "image": "images/ingredients/lobster.png"
+    },
+    {
+        "name": "Pigeon",
+        "tags": [
+            "Meat"
+        ],
+        "auto_unlock": false,
+        "description": "A small, plump, feathery bird. It has a rich, gamey flavor and a distinctly chaotic habit of bobbing its head constantly while staring at you.",
+        "image": "images/ingredients/pigeon.png"
+    },
+    {
+        "name": "Crow",
+        "tags": [
+            "Meat",
+            "Creepy"
+        ],
+        "auto_unlock": false,
+        "description": "A sleek, jet-black bird of ill omen. Its meat is notoriously tough, stringy, and leaves a lingering aftertaste of bad luck and existential regret.",
+        "image": "images/ingredients/crow.png"
+    },
+    {
+        "name": "Rat",
+        "tags": [
+            "Meat",
+            "Creepy"
+        ],
+        "auto_unlock": false,
+        "description": "A twitchy, long-tailed survivor of the shadows. Cooking this whole rodent is a loud cry for help, but hey, survival means protein is protein.",
+        "image": "images/ingredients/rat.png"
+    },
+    {
+        "name": "Bat",
+        "tags": [
+            "Meat",
+            "Creepy"
+        ],
+        "auto_unlock": false,
+        "description": "A leathery, winged mammal of the night. Cooking this whole creature creates a highly chaotic vibe in the kitchen. The soup is definitely staring back at you.",
+        "image": "images/ingredients/bat.png"
+    },
+    {
+        "name": "Duck",
+        "tags": [
+            "Meat"
+        ],
+        "auto_unlock": false,
+        "description": "A stout waterfowl with webbed feet and water-proof feathers. It carries a thick, glorious layer of natural fat right under its skin for maximum crispiness.",
+        "image": "images/ingredients/duck.png"
+    },
+    {
+        "name": "Bees",
+        "tags": [
+            "Creepy"
+        ],
+        "auto_unlock": false,
+        "description": "A small, buzzing swarm of fuzzy yellow-and-black insects. Eating them whole gives a crunchy, sweet burst followed by a sharp, stinging sense of guilt.",
+        "image": "images/ingredients/bees.png"
+    },
+    {
+        "name": "Old Shoes",
+        "tags": [
+            "Tool",
+            "Creepy"
+        ],
+        "auto_unlock": false,
+        "description": "A tattered, mud-stained leather boot. Boiling this rubber-soled relic does absolutely nothing to soften the leather, but it guarantees a broth that smells like gym socks.",
+        "image": "images/ingredients/old_shoes.png"
+    },
+    {
+        "name": "Starfish",
+        "tags": [
+            "Creepy",
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A rigid, bumpy five-pointed star harvested from the seafloor. Breaking off a stiff arm to eat the mushy green insides is a true test of human courage.",
+        "image": "images/ingredients/starfish.png"
+    },
+    {
+        "name": "Octopus",
+        "tags": [
+            "Seafood"
+        ],
+        "auto_unlock": false,
+        "description": "A dramatic, squishy bag of pure intelligence with eight suction-cupped tentacles. It looks like a miniature alien, but turns incredibly tender over an open flame.",
+        "image": "images/ingredients/octopus.png"
+    },
+    {
+        "name": "Frog",
+        "tags": [
+            "Meat",
+            "Creepy"
+        ],
+        "auto_unlock": false,
+        "description": "A bug-eyed, green amphibian built for jumping. Its slender legs look like tiny chicken wings but carry a much higher spring capacity before hitting the pan.",
+        "image": "images/ingredients/frog.png"
+    }
+]

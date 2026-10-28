@@ -1,15 +1,32 @@
-"""Extract recipes and ingredients from the cozy-kitchen Unity WebGL data file.
+"""Extract the cozy-kitchen recipe data from the game's Unity WebGL data file.
 
-Pipeline: .data.br -> decompress -> unpack the UnityWebData archive -> find the DataRecipe object
--> parse its Odin-serialized blob -> write recipes.json and game_ingredients.json.
+Input:  data/br/cozy-kitchen.data.br
+Output: recipes.json      every recipe: name, category, dish type, ingredients, description, image
+        ingredients.json  every ingredient: name, tags, auto unlock, description, image
+        translations.json every name -> {"name": {...}, "description": {...}} in the 15 languages of the game
+        data/images/      ingredients/*.png, and recipes/*.png when --bundles-dir is given
 
-Requirements: pip install brotli UnityPy
+Pipeline: .data.br -> decompress -> unpack the UnityWebData archive -> read the DataRecipe object (Odin format)
+-> read the I2 Localization terms (names and descriptions in 15 languages) -> export the images
+-> write the JSON files.
+
+The ingredient images are inside the game data. The dish images are Addressable assets that the game downloads
+while it runs: save those bundle files into one folder and pass it with --bundles-dir.
+The "image" links look like "images/ingredients/egg.png": they are relative to the parent of the images folder.
+
+Requirements: pip install brotli UnityPy   (UnityPy brings Pillow and the texture decoders)
 """
 
 import argparse
+import itertools
 import json
+import re
 import struct
+import tempfile
+import unicodedata
 from collections import Counter
+from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +37,6 @@ WEB_DATA_MAGIC = b"UnityWebData1.0\x00"
 RECIPE_SCRIPT_NAME = "DataRecipe"
 BLOB_HEAD_MARKER = "dictIngredientConfigs".encode("utf-16-le")
 BLOB_HEAD_SIZE = 64
-MONOBEHAVIOUR_HEADER_SIZE = 28  # m_GameObject (12) + m_Enabled (4) + m_Script (12)
 
 # Recipe dictionary field -> category label written to recipes.json
 RECIPE_FIELDS = {
@@ -28,6 +44,44 @@ RECIPE_FIELDS = {
     "dicDarkCuisineRecipe": "dark_cuisine",
     "dicMessyRecipe": "messy",
 }
+
+MONOBEHAVIOUR_HEADER_SIZE = 28  # m_GameObject (12) + m_Enabled (4) + m_Script (12)
+LOCALIZATION_SCRIPT_NAME = "LanguageSourceAsset"
+DESCRIPTION_SUFFIX = " desc"  # the game stores the description of "<name>" under the key "<name> desc"
+
+# Language of each translation column, in the order the game stores them (cross-checked with the Vietnamese column).
+# The two "Telur" columns are Indonesian and Malay; their order is a guess, swap them here if it is wrong.
+LANGUAGE_CODES = [
+    ("English", "en"),
+    ("Vietnamese", "vi"),
+    ("Indonesian", "id"),
+    ("Malay", "ms"),
+    ("Thai", "th"),
+    ("Russian", "ru"),
+    ("Hindi", "hi"),
+    ("German", "de"),
+    ("French", "fr"),
+    ("Spanish", "es"),
+    ("Italian", "it"),
+    ("Turkish", "tr"),
+    ("Korean", "ko"),
+    ("Japanese", "ja"),
+    ("Chinese", "zh"),
+]
+
+MAX_EXAMPLES = 10
+IMAGE_TYPES = ("Texture2D", "Sprite")  # a Texture2D is preferred when both carry the same name
+
+# Limits used to recognise I2 Localization term records
+MAX_TERM_BYTES = 200  # must stay below 256: the scan checks the length with a single byte
+MAX_STRING_BYTES = 5000
+MAX_ARRAY_LENGTH = 64
+MIN_LANGUAGES = 2
+MIN_CHAIN = 20  # consecutive valid records needed to trust a layout
+MAX_SCAN_BYTES = 1_000_000
+CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
+# Letters that only Vietnamese uses (not French, Spanish, Italian, Turkish, ...)
+VIETNAMESE_CHARS = frozenset("ăơưđạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ")
 
 # Odin binary entry types (the unnamed variant of a primitive is the named code + 1)
 NAMED_REF_NODE = 0x01
@@ -103,11 +157,37 @@ def unpack_web_data(raw: bytes, output_dir: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Step 3: find the DataRecipe ScriptableObject and cut out its serialized blob
+# Step 3: find ScriptableObjects by script class name and cut out the DataRecipe blob
 # ---------------------------------------------------------------------------
 def align4(value: int) -> int:
     """Round up to the next multiple of 4 (Unity pads serialized strings to 4 bytes)."""
     return (value + 3) & ~3
+
+
+class GameAssets:
+    """The unpacked Unity assets, with a MonoScript index to find object data by class name."""
+
+    def __init__(self, asset_dir: Path) -> None:
+        self.env = UnityPy.load(str(asset_dir))
+
+        # Map MonoScript path id -> class names (path ids can collide across serialized files)
+        self.script_names: dict[int, set[str]] = {}
+        for obj in self.env.objects:
+            if obj.type.name == "MonoScript":
+                self.script_names.setdefault(obj.path_id, set()).add(obj.read().m_ClassName)
+
+    def script_objects(self, class_name: str) -> Iterator[bytes]:
+        """Yield the raw data of every MonoBehaviour whose script class is class_name."""
+        for obj in self.env.objects:
+            if obj.type.name != "MonoBehaviour":
+                continue
+            raw = obj.get_raw_data()
+            if len(raw) < MONOBEHAVIOUR_HEADER_SIZE:
+                continue
+            # The m_Script PPtr starts at offset 16: int32 file id + int64 path id
+            _, script_path_id = struct.unpack_from("<iq", raw, 16)
+            if class_name in self.script_names.get(script_path_id, set()):
+                yield raw
 
 
 def read_blob(raw: bytes) -> bytes:
@@ -120,28 +200,9 @@ def read_blob(raw: bytes) -> bytes:
     return raw[pos : pos + blob_len]
 
 
-def find_recipe_blob(asset_dir: Path) -> bytes:
-    """Locate the DataRecipe MonoBehaviour by its script class name and return its Odin blob."""
-    env = UnityPy.load(str(asset_dir))
-
-    # Map MonoScript path id -> class names (path ids can collide across serialized files)
-    script_names: dict[int, set[str]] = {}
-    for obj in env.objects:
-        if obj.type.name == "MonoScript":
-            script_names.setdefault(obj.path_id, set()).add(obj.read().m_ClassName)
-
-    for obj in env.objects:
-        if obj.type.name != "MonoBehaviour":
-            continue
-        raw = obj.get_raw_data()
-        if len(raw) < MONOBEHAVIOUR_HEADER_SIZE:
-            continue
-
-        # The m_Script PPtr starts at offset 16: int32 file id + int64 path id
-        _, script_path_id = struct.unpack_from("<iq", raw, 16)
-        if RECIPE_SCRIPT_NAME not in script_names.get(script_path_id, set()):
-            continue
-
+def find_recipe_blob(assets: GameAssets) -> bytes:
+    """Locate the DataRecipe object and return its Odin blob."""
+    for raw in assets.script_objects(RECIPE_SCRIPT_NAME):
         try:
             blob = read_blob(raw)
         except (struct.error, ValueError):
@@ -151,6 +212,47 @@ def find_recipe_blob(asset_dir: Path) -> bytes:
             return blob
 
     raise LookupError(f"No {RECIPE_SCRIPT_NAME} object found. The game may have changed its data format.")
+
+
+MENU_SCRIPT_NAME = "DataMenuCollections"
+MENU_FIELD = "dicMenuCollectionConfigs"
+
+
+def find_menu_blob(assets: GameAssets) -> bytes:
+    """Locate the DataMenuCollections object and return its Odin blob."""
+    marker = MENU_FIELD.encode("utf-16-le")
+    for raw in assets.script_objects(MENU_SCRIPT_NAME):
+        try:
+            blob = read_blob(raw)
+        except (struct.error, ValueError):
+            continue
+        if marker in blob[:BLOB_HEAD_SIZE]:
+            return blob
+    raise LookupError(f"No {MENU_SCRIPT_NAME} object found.")
+
+
+def build_menu_collections(menu_data: dict[str, Any], lookup: "TermLookup") -> list[dict[str, Any]]:
+    result = []
+    for _, menu in dict_pairs(menu_data, MENU_FIELD):
+        name = language_map(lookup.find(menu["name"]))
+        description = language_map(lookup.find(menu["description"]))
+        result.append(
+            {
+                "id": menu["id"],
+                "sort_order": menu["sortOrder"],
+                "name": name["en"],
+                "description": description["en"],
+                "available_quest": menu["availableQuest"],
+                "quest_phase": menu["questPhase"],
+                "story_unlock": menu["storyUnlock"],
+                "reward_type": menu["rewardType"],
+                "required_ingredients": menu["requiredIngredients"],
+                "recipes": menu["recipes"],
+                "image": None,
+                "translations": {"name": name, "description": description},
+            }
+        )
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -318,9 +420,6 @@ def parse_odin(blob: bytes) -> dict[str, Any]:
     return resolve_refs(reader.result, reader.nodes)
 
 
-# ---------------------------------------------------------------------------
-# Step 5: build the output files
-# ---------------------------------------------------------------------------
 def dict_pairs(data: dict[str, Any], field: str) -> list[tuple[str, Any]]:
     """Return the (key, value) pairs of a serialized Dictionary field."""
     value = data[field]
@@ -328,11 +427,275 @@ def dict_pairs(data: dict[str, Any], field: str) -> list[tuple[str, Any]]:
     return [(pair["$k"], pair["$v"]) for pair in items]
 
 
-def build_outputs(data: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Turn the parsed data into (recipes, ingredients) lists."""
+# ---------------------------------------------------------------------------
+# Step 5: read the I2 Localization terms (names, descriptions and their translations)
+# ---------------------------------------------------------------------------
+# Every term record is Unity-serialized in this order (the layout flags below cover the optional parts):
+#   string Term, int32 TermType, [string Description], string[] Languages, [byte[] Flags], [string[] Languages_Touch]
+@dataclass(frozen=True)
+class TermLayout:
+    """Which optional fields each I2 term record contains."""
+
+    has_description: bool
+    has_flags: bool
+    has_touch: bool
+
+
+Term = tuple[str, list[str]]  # (English key, translation per language)
+
+
+def read_int32(raw: bytes, pos: int) -> int:
+    return struct.unpack_from("<i", raw, pos)[0]
+
+
+def read_unity_string(raw: bytes, pos: int, max_length: int = MAX_STRING_BYTES) -> tuple[str, int]:
+    """Read a Unity-serialized string (int32 length + UTF-8 bytes, padded to 4); return (text, next position)."""
+    length = read_int32(raw, pos)
+    end = pos + 4 + length
+    if not 0 <= length <= max_length or end > len(raw):
+        raise ValueError(f"Bad string length {length} at offset {pos}")
+    text = raw[pos + 4 : end].decode("utf-8")
+    if CONTROL_CHARS.search(text):
+        raise ValueError(f"Control characters in string at offset {pos}")
+    return text, align4(end)
+
+
+def read_string_array(raw: bytes, pos: int) -> tuple[list[str], int]:
+    """Read a Unity string[] (int32 count + strings); return (items, next position)."""
+    count = read_int32(raw, pos)
+    if not 0 <= count <= MAX_ARRAY_LENGTH:
+        raise ValueError(f"Bad array length {count} at offset {pos}")
+    pos += 4
+    items: list[str] = []
+    for _ in range(count):
+        text, pos = read_unity_string(raw, pos)
+        items.append(text)
+    return items, pos
+
+
+def read_term(raw: bytes, pos: int, layout: TermLayout) -> tuple[Term, int]:
+    """Read one term record starting at pos; return (term, next position)."""
+    key, pos = read_unity_string(raw, pos, MAX_TERM_BYTES)
+    if not key:
+        raise ValueError(f"Empty term at offset {pos}")
+    pos += 4  # TermType enum (int32)
+    if layout.has_description:
+        _, pos = read_unity_string(raw, pos)
+    translations, pos = read_string_array(raw, pos)
+    if len(translations) < MIN_LANGUAGES:
+        raise ValueError(f"Too few languages at offset {pos}")
+    if layout.has_flags:
+        flags_length = read_int32(raw, pos)
+        if not 0 <= flags_length <= MAX_ARRAY_LENGTH:
+            raise ValueError(f"Bad flags length {flags_length} at offset {pos}")
+        pos = align4(pos + 4 + flags_length)
+    if layout.has_touch:
+        _, pos = read_string_array(raw, pos)
+    return (key, translations), pos
+
+
+def read_term_chain(raw: bytes, start: int, layout: TermLayout, limit: int | None = None) -> list[Term]:
+    """Read consecutive term records from start until one fails to parse (or limit is reached)."""
+    terms: list[Term] = []
+    pos = start
+    while limit is None or len(terms) < limit:
+        try:
+            term, pos = read_term(raw, pos, layout)
+        except (ValueError, struct.error):
+            break
+        terms.append(term)
+    return terms
+
+
+def find_chain_start(raw: bytes, layout: TermLayout) -> int | None:
+    """Find the first offset where MIN_CHAIN valid term records follow each other."""
+    for pos in range(min(len(raw), MAX_SCAN_BYTES)):
+        # Cheap pre-filter: a plausible string length is a small int32 (high three bytes are zero)
+        if not 0 < raw[pos] <= MAX_TERM_BYTES or raw[pos + 1 : pos + 4] != b"\x00\x00\x00":
+            continue
+        chain = read_term_chain(raw, pos, layout, limit=MIN_CHAIN)
+        if len(chain) == MIN_CHAIN and len({len(translations) for _, translations in chain}) == 1:
+            return pos
+    return None
+
+
+def detect_terms(raw: bytes) -> tuple[TermLayout, list[Term]] | None:
+    """Try every layout and keep the one that reads the most terms."""
+    best: tuple[TermLayout, list[Term]] | None = None
+    for flags in itertools.product((True, False), repeat=3):
+        layout = TermLayout(*flags)
+        start = find_chain_start(raw, layout)
+        if start is None:
+            continue
+        terms = read_term_chain(raw, start, layout)
+        if best is None or len(terms) > len(best[1]):
+            best = (layout, terms)
+    return best
+
+
+def hexdump_around(raw: bytes, anchor: str) -> str:
+    """Hexdump of the raw data around the first occurrence of anchor, to help work out the layout."""
+    encoded = anchor.encode("utf-8")
+    position = raw.find(struct.pack("<i", len(encoded)) + encoded)
+    if position < 0:
+        return f"'{anchor}' was not found in the localization data."
+
+    start = max(0, position - 64)
+    lines: list[str] = []
+    for offset in range(start - start % 16, min(len(raw), position + 512), 16):
+        chunk = raw[offset : offset + 16]
+        hex_part = " ".join(f"{byte:02x}" for byte in chunk)
+        ascii_part = "".join(chr(byte) if 32 <= byte < 127 else "." for byte in chunk)
+        lines.append(f"{offset:08x}  {hex_part:<47}  {ascii_part}")
+    return "\n".join(lines)
+
+
+def find_localization_terms(assets: GameAssets, anchor: str) -> tuple[TermLayout, list[Term]]:
+    """Parse the I2 Localization terms; anchor is a known term used for the failure report."""
+    raws = list(assets.script_objects(LOCALIZATION_SCRIPT_NAME))
+    best: tuple[TermLayout, list[Term]] | None = None
+    for raw in raws:
+        result = detect_terms(raw)
+        if result is not None and (best is None or len(result[1]) > len(best[1])):
+            best = result
+
+    if best is None:
+        if raws:
+            report = hexdump_around(max(raws, key=len), anchor)
+        else:
+            report = f"No {LOCALIZATION_SCRIPT_NAME} object found."
+        raise LookupError(f"Could not read the I2 Localization terms. Please share this dump:\n{report}")
+    return best
+
+
+def find_vietnamese_index(terms: list[Term]) -> int:
+    """Return the language column whose translations most often contain Vietnamese-only letters."""
+    hits: Counter[int] = Counter()
+    for _, translations in terms:
+        for index, text in enumerate(translations):
+            if VIETNAMESE_CHARS & set(text.lower()):
+                hits[index] += 1
+    if not hits:
+        raise LookupError("No Vietnamese translations found in the localization terms.")
+    return hits.most_common(1)[0][0]
+
+
+# ---------------------------------------------------------------------------
+# Step 6: export the images
+# ---------------------------------------------------------------------------
+def normalize(text: str) -> str:
+    """Lower-case a name and drop everything except letters and digits, so 'Boiled_Egg' == 'boiled egg'."""
+    return re.sub(r"[^a-z0-9]", "", text.casefold())
+
+
+def slugify(name: str) -> str:
+    """Make a safe file name: 'Sautéed Bell Peppers & Onions' -> 'sauteed_bell_peppers_onions'."""
+    ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", "_", ascii_name.lower()).strip("_") or "image"
+
+
+def unique_file_name(slug: str, used: set[str]) -> str:
+    """Return '<slug>.png', or '<slug>_2.png' and so on when that name is already taken."""
+    candidate, number = f"{slug}.png", 2
+    while candidate in used:
+        candidate = f"{slug}_{number}.png"
+        number += 1
+    used.add(candidate)
+    return candidate
+
+
+def index_images(env: Any) -> dict[str, list[Any]]:
+    """Map each normalized image name to its Texture2D / Sprite objects (Texture2D first)."""
+    index: dict[str, list[Any]] = {}
+    for type_name in IMAGE_TYPES:
+        for obj in env.objects:
+            if obj.type.name != type_name:
+                continue
+            try:
+                name = obj.read().m_Name
+            except Exception:  # an object that cannot be parsed is simply not available as an image
+                continue
+            index.setdefault(normalize(name), []).append(obj)
+    return index
+
+
+def export_images(index: dict[str, list[Any]], names: list[str], images_dir: Path, folder: str) -> dict[str, str]:
+    """Save one PNG per name into images_dir/folder; return {name: link} for the names that have an image."""
+    target_dir = images_dir / folder
+    target_dir.mkdir(parents=True, exist_ok=True)
+    links: dict[str, str] = {}
+    used: set[str] = set()
+    failed: list[str] = []
+    for name in dict.fromkeys(names):
+        objects = index.get(normalize(name))
+        if not objects:
+            continue
+        file_name = unique_file_name(slugify(name), used)
+        try:
+            objects[0].read().image.save(target_dir / file_name)
+        except Exception as error:  # a texture that cannot be decoded must not stop the export
+            failed.append(f"{name} ({error})")
+            continue
+        links[name] = f"{images_dir.name}/{folder}/{file_name}"
+    if failed:
+        print(f"      could not decode {len(failed)} images, e.g. {failed[:MAX_EXAMPLES]}")
+    return links
+
+
+# ---------------------------------------------------------------------------
+# Step 7: build and write the output files
+# ---------------------------------------------------------------------------
+class TermLookup:
+    """Find the translations of a key (exact match first, then ignoring case)."""
+
+    def __init__(self, terms: list[Term]) -> None:
+        self.table: dict[str, list[str]] = {}
+        for key, translations in terms:
+            self.table.setdefault(key, translations)
+        self.lower_table: dict[str, list[str]] = {}
+        for key, translations in self.table.items():
+            self.lower_table.setdefault(key.lower(), translations)
+
+    def find(self, key: str) -> list[str] | None:
+        return self.table.get(key) or self.lower_table.get(key.lower())
+
+    def description_keys(self) -> list[str]:
+        return [key for key in self.table if key.lower().endswith(DESCRIPTION_SUFFIX)]
+
+
+def language_map(translations: list[str] | None) -> dict[str, str | None]:
+    """Return {language code: text} for the 15 languages; a missing or empty text becomes None."""
+    values = translations or []
+    result: dict[str, str | None] = {}
+    for index, (_, code) in enumerate(LANGUAGE_CODES):
+        text = values[index] if index < len(values) else None
+        result[code] = text or None
+    return result
+
+
+def build_outputs(
+    data: dict[str, Any],
+    lookup: TermLookup,
+    ingredient_images: dict[str, str],
+    recipe_images: dict[str, str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, dict[str, dict[str, str | None]]]]:
+    """Turn the parsed data into (recipes, ingredients, translations).
+
+    translations maps every name to {"name": {language code: text}, "description": {language code: text}}.
+    """
+
+    def english_description(name: str) -> str | None:
+        return language_map(lookup.find(name + DESCRIPTION_SUFFIX))["en"]
+
     ingredient_configs = dict(dict_pairs(data, "dictIngredientConfigs"))
     ingredients = [
-        {"name": name, "tags": config["lstTag"], "auto_unlock": config["autoUnlock"]}
+        {
+            "name": name,
+            "tags": config["lstTag"],
+            "auto_unlock": config["autoUnlock"],
+            "description": english_description(name),
+            "image": ingredient_images.get(name),
+        }
         for name, config in ingredient_configs.items()
     ]
 
@@ -345,43 +708,132 @@ def build_outputs(data: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict
                     "category": category,
                     "dish_type": recipe["dishType"],
                     "ingredients": recipe["lstIngredients"],
+                    "description": english_description(recipe["name"]),
+                    "image": recipe_images.get(recipe["name"]),
                 }
             )
-    return recipes, ingredients
+
+    # Every name the data refers to: ingredients, tags, recipes and the entries of each recipe
+    names: list[str] = list(ingredient_configs)
+    names += [tag for config in ingredient_configs.values() for tag in config["lstTag"]]
+    names += [tag for tag, _ in dict_pairs(data, "dicTagIngredients")]
+    for recipe in recipes:
+        names.append(recipe["name"])
+        names += recipe["ingredients"]
+
+    # Both parts always have the 15 language codes; a missing text is None
+    translations = {
+        name: {
+            "name": language_map(lookup.find(name)),
+            "description": language_map(lookup.find(name + DESCRIPTION_SUFFIX)),
+        }
+        for name in dict.fromkeys(names)
+    }
+    return recipes, ingredients, translations
 
 
-def write_json(path: Path, rows: list[dict[str, Any]]) -> None:
-    path.write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
+def write_json(path: Path, data: Any) -> None:
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=4), encoding="utf-8")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("data_file", type=Path, nargs="?", default=Path("data/br/cozy-kitchen.data.br"))
-    parser.add_argument("--work-dir", type=Path, default=Path("unpacked"), help="where the archive is unpacked")
+    # The default folder name "ouput" matches the existing project folder
     parser.add_argument("--out-dir", type=Path, default=Path("data/ouput"), help="where the JSON files are written")
+    parser.add_argument("--images-dir", type=Path, default=Path("data/images"), help="where the PNG images are written")
+    parser.add_argument("--bundles-dir", type=Path, help="folder with the downloaded Addressable bundles (dish images)")
+    parser.add_argument("--work-dir", type=Path, help="keep the unpacked game files here (default: a temporary folder)")
     args = parser.parse_args()
 
-    print(f"[1/5] Reading {args.data_file}")
+    print(f"[1/7] Reading {args.data_file}")
     raw = load_web_data(args.data_file)
 
-    print(f"[2/5] Unpacking into {args.work_dir}")
-    unpack_web_data(raw, args.work_dir)
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
+        work_dir = args.work_dir or Path(temp_dir)
+        print(f"[2/7] Unpacking into {work_dir}")
+        unpack_web_data(raw, work_dir)
 
-    print(f"[3/5] Looking for the {RECIPE_SCRIPT_NAME} object")
-    blob = find_recipe_blob(args.work_dir)
-    print(f"      found a {len(blob)} byte blob")
+        print(f"[3/7] Looking for the {RECIPE_SCRIPT_NAME} object")
+        assets = GameAssets(work_dir)
+        blob = find_recipe_blob(assets)
+        print(f"      found a {len(blob)} byte blob")
 
-    print("[4/5] Parsing the Odin data")
-    data = parse_odin(blob)
+        print("[4/7] Parsing the Odin data")
+        data = parse_odin(blob)
 
-    print("[5/5] Writing JSON files")
-    recipes, ingredients = build_outputs(data)
+        # Menu collections
+        menu_data = parse_odin(find_menu_blob(assets))
+
+        print("[5/7] Reading the I2 Localization terms")
+        anchor = dict_pairs(data, "dicNormalRecipe")[0][0]
+        layout, terms = find_localization_terms(assets, anchor)
+
+        print("[6/7] Exporting the images")
+        ingredient_names = [name for name, _ in dict_pairs(data, "dictIngredientConfigs")]
+        recipe_names = [recipe["name"] for field in RECIPE_FIELDS for _, recipe in dict_pairs(data, field)]
+        ingredient_images = export_images(index_images(assets.env), ingredient_names, args.images_dir, "ingredients")
+        recipe_images: dict[str, str] = {}
+        if args.bundles_dir:
+            bundles = UnityPy.load(str(args.bundles_dir))
+            recipe_images = export_images(index_images(bundles), recipe_names, args.images_dir, "recipes")
+        else:
+            print("      no --bundles-dir given: the recipe images are skipped")
+        del assets  # release the unpacked files before the temporary folder is removed
+
+    vietnamese_index = find_vietnamese_index(terms)
+    print(f"      {len(terms)} terms, Vietnamese is language #{vietnamese_index}, record layout {layout}")
+    expected_index = [code for _, code in LANGUAGE_CODES].index("vi")
+    if vietnamese_index != expected_index:
+        raise LookupError(
+            f"Vietnamese was found in column {vietnamese_index}, but LANGUAGE_CODES expects it in column "
+            f"{expected_index}. Fix the order of LANGUAGE_CODES."
+        )
+    column_counts = Counter(len(translations) for _, translations in terms)
+    if set(column_counts) != {len(LANGUAGE_CODES)}:
+        print(f"      WARNING: expected {len(LANGUAGE_CODES)} languages per term, got {dict(column_counts)}")
+
+    print("[7/7] Writing the JSON files")
+    lookup = TermLookup(terms)
+    recipes, ingredients, translations = build_outputs(data, lookup, ingredient_images, recipe_images)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_json(args.out_dir / "recipes.json", recipes)
-    write_json(args.out_dir / "game_ingredients.json", ingredients)
+    write_json(args.out_dir / "ingredients.json", ingredients)
+    write_json(args.out_dir / "translations.json", translations)
+    write_json(args.out_dir / "menu-collections.json", build_menu_collections(menu_data, lookup))
 
     per_category = Counter(recipe["category"] for recipe in recipes)
-    print(f"Done: {len(recipes)} recipes {dict(per_category)}, {len(ingredients)} ingredients -> {args.out_dir}")
+    print(f"Done -> {args.out_dir}")
+    print(f"  recipes.json: {len(recipes)} recipes {dict(per_category)}")
+    print(f"  ingredients.json: {len(ingredients)} ingredients")
+    described_names = sum(1 for entry in translations.values() if any(entry["description"].values()))
+    print(f"  translations.json: {len(translations)} entries, {described_names} with a description")
+    print(
+        f"  images in {args.images_dir}: {len(ingredient_images)}/{len(ingredients)} ingredients, "
+        f"{len(recipe_images)}/{len(recipes)} recipes"
+    )
+    no_image = [name for name in ingredient_names if name not in ingredient_images]
+    if no_image:
+        print(f"  ingredients without an image: {no_image[:MAX_EXAMPLES]}")
+    if args.bundles_dir:
+        no_image = [name for name in dict.fromkeys(recipe_names) if name not in recipe_images]
+        if no_image:
+            print(f"  recipes without an image ({len(no_image)}): {no_image[:MAX_EXAMPLES]}")
+
+    missing = [name for name, entry in translations.items() if not any(entry["name"].values())]
+    if missing:
+        print(f"  {len(missing)} names have no translation (all null), e.g. {missing[:MAX_EXAMPLES]}")
+    described_recipes = sum(1 for recipe in recipes if recipe["description"])
+    described_ingredients = sum(1 for ingredient in ingredients if ingredient["description"])
+    print(
+        f"  descriptions found: {described_recipes}/{len(recipes)} recipes, "
+        f"{described_ingredients}/{len(ingredients)} ingredients"
+    )
+    known = {name.lower() for name in translations}
+    unmatched = [key for key in lookup.description_keys() if key[: -len(DESCRIPTION_SUFFIX)].lower() not in known]
+    print(f"  {len(lookup.description_keys())} description keys in the game, {len(unmatched)} not matching any name")
+    if unmatched:
+        print(f"  e.g. {unmatched[:MAX_EXAMPLES]}")
 
 
 if __name__ == "__main__":
