@@ -1,6 +1,6 @@
 """Extract the cozy-kitchen recipe data from the game's Unity WebGL data file.
 
-Input:  data/br/cozy-kitchen.data.br
+Input:  data/src/cozy-kitchen.data.br
 Output: recipes.json      every recipe: name, category, dish type, ingredients, description, image
         ingredients.json  every ingredient: name, tags, auto unlock, description, image
         translations.json every name -> {"name": {...}, "description": {...}} in the 15 languages of the game
@@ -738,12 +738,22 @@ def write_json(path: Path, data: Any) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("data_file", type=Path, nargs="?", default=Path("data/br/cozy-kitchen.data.br"))
+    parser.add_argument("data_file", type=Path, nargs="?", default=Path("data/src/cozy-kitchen.data.br"))
     # The default folder name "ouput" matches the existing project folder
     parser.add_argument("--out-dir", type=Path, default=Path("data/ouput"), help="where the JSON files are written")
     parser.add_argument("--images-dir", type=Path, default=Path("data/images"), help="where the PNG images are written")
-    parser.add_argument("--bundles-dir", type=Path, help="folder with the downloaded Addressable bundles (dish images)")
-    parser.add_argument("--work-dir", type=Path, help="keep the unpacked game files here (default: a temporary folder)")
+    parser.add_argument(
+        "--bundles-dir",
+        type=Path,
+        default=Path("data/bundles"),
+        help="folder with the downloaded Addressable bundles (dish images)",
+    )
+    parser.add_argument(
+        "--work-dir",
+        type=Path,
+        default=Path("data/unpacked"),
+        help="keep the unpacked game files here (default: a temporary folder)",
+    )
     args = parser.parse_args()
 
     print(f"[1/7] Reading {args.data_file}")

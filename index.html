@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>cozy-kitchen-wiki</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='22' fill='%237a5c36'/%3E%3Ccircle cx='24' cy='24' r='19' fill='%238cbf3f'/%3E%3Ccircle cx='24' cy='24' r='7' fill='%23eef3c8'/%3E%3C/svg%3E"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&amp;display=swap"
+        />
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <div class="wrap">
+            <header class="masthead">
+                <div class="brand">
+                    <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+                        <circle cx="24" cy="24" r="22" fill="#7a5c36" />
+                        <circle cx="24" cy="24" r="19" fill="#8cbf3f" />
+                        <circle cx="24" cy="24" r="7" fill="#eef3c8" />
+                        <g fill="#2a2416">
+                            <ellipse cx="24.0" cy="11.8" rx="1.1" ry="2.1" transform="rotate(0 24.0 11.8)" />
+                            <ellipse cx="31.2" cy="14.1" rx="1.1" ry="2.1" transform="rotate(36 31.2 14.1)" />
+                            <ellipse cx="35.6" cy="20.2" rx="1.1" ry="2.1" transform="rotate(72 35.6 20.2)" />
+                            <ellipse cx="35.6" cy="27.8" rx="1.1" ry="2.1" transform="rotate(108 35.6 27.8)" />
+                            <ellipse cx="31.2" cy="33.9" rx="1.1" ry="2.1" transform="rotate(144 31.2 33.9)" />
+                            <ellipse cx="24.0" cy="36.2" rx="1.1" ry="2.1" transform="rotate(180 24.0 36.2)" />
+                            <ellipse cx="16.8" cy="33.9" rx="1.1" ry="2.1" transform="rotate(216 16.8 33.9)" />
+                            <ellipse cx="12.4" cy="27.8" rx="1.1" ry="2.1" transform="rotate(252 12.4 27.8)" />
+                            <ellipse cx="12.4" cy="20.2" rx="1.1" ry="2.1" transform="rotate(288 12.4 20.2)" />
+                            <ellipse cx="16.8" cy="14.1" rx="1.1" ry="2.1" transform="rotate(324 16.8 14.1)" />
+                        </g>
+                    </svg>
+                    <h1>Cozy Kitchen wiki</h1>
+                </div>
+                <div class="field lang-field">
+                    <label for="language" class="sr-only" data-i18n="languageLabel">Language</label>
+                    <select id="language"></select>
+                </div>
+            </header>
+
+            <section class="ledger" aria-label="Totals">
+                <div>
+                    <span class="figure" id="stat-ingredients">–</span>
+                    <span class="caption" data-i18n="ingredients">Ingredients</span>
+                </div>
+                <div>
+                    <span class="figure" id="stat-recipes">–</span>
+                    <span class="caption" data-i18n="recipes">Recipes</span>
+                    <div class="mix" id="mix" role="img"></div>
+                    <ul class="legend" id="legend"></ul>
+                </div>
+                <div>
+                    <span class="figure" id="stat-menus">–</span>
+                    <span class="caption" data-i18n="menus">Menu collections</span>
+                </div>
+            </section>
+            <main class="workspace">
+                <!-- Left: search + results frame (list of matches, or recipe detail) -->
+                <section class="pane" aria-labelledby="search-title">
+                    <h2 class="pane-title" id="search-title" data-i18n="recipes">Recipes</h2>
+                    <form class="search-box" role="search" onsubmit="return false;">
+                        <label for="search" class="sr-only" data-i18n="searchPlaceholder"
+                            >Recipe or ingredient name</label
+                        >
+                        <input
+                            id="search"
+                            type="search"
+                            autocomplete="off"
+                            spellcheck="false"
+                            aria-describedby="search-hint"
+                        />
+                    </form>
+                    <div class="status">
+                        <span id="search-hint"></span>
+                        <span id="count" aria-live="polite"></span>
+                    </div>
+                    <p class="notice" id="notice" hidden></p>
+                    <div class="frame" id="results"></div>
+                </section>
+
+                <!-- Right: menu collection + its recipes -->
+                <section class="pane" aria-labelledby="menu-title">
+                    <h2 class="pane-title" id="menu-title" data-i18n="menus">Menu collections</h2>
+                    <div class="field">
+                        <label for="menu" class="sr-only" data-i18n="menuLabel">Menu collection</label>
+                        <select id="menu"></select>
+                    </div>
+                    <div class="menu-panel" id="menu-panel" hidden></div>
+                    <div class="frame" id="menu-recipes"></div>
+                </section>
+            </main>
+        </div>
+        <script src="scripts.js"></script>
+    </body>
+</html>
