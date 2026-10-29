@@ -23,10 +23,7 @@
         categories: { normal: "Normal", dark_cuisine: "Dark cuisine", messy: "Messy" },
         searchPlaceholder: "Recipe or ingredient name",
         languageLabel: "Language",
-        searchHint: "Searching names in {language}",
         menuLabel: "Menu collection",
-        count: { one: "{n} recipe", other: "{n} recipes" },
-        needs: "Needs",
         back: "Back to results",
         ingredientsTitle: "Ingredients",
         noMenus: "No menu collections available.",
@@ -41,13 +38,10 @@
         ingredients: "Nguyên liệu",
         recipes: "Món ăn",
         menus: "Bộ sưu tập menu",
-        categories: { normal: "Thông thường", dark_cuisine: "Hắc ám", messy: "Lộn xộn" },
+        categories: { normal: "Thường", dark_cuisine: "Hắc ám", messy: "Lộn xộn" },
         searchPlaceholder: "Tên món hoặc tên nguyên liệu",
         languageLabel: "Ngôn ngữ",
-        searchHint: "Đang tìm theo tên bằng {language}",
         menuLabel: "Bộ sưu tập menu",
-        count: { one: "{n} món ăn", other: "{n} món ăn" },
-        needs: "Cần có",
         back: "Quay lại kết quả",
         ingredientsTitle: "Nguyên liệu",
         noMenus: "Chưa có bộ sưu tập menu nào.",
@@ -79,7 +73,7 @@
     };
 
     const el = Object.fromEntries(
-      ["language", "search", "menu", "results", "menu-recipes", "count", "notice", "menu-panel", "search-hint", "mix", "legend",
+      ["language", "search", "menu", "results", "menu-recipes", "menu-panel", "search-hint", "mix", "legend",
         "stat-ingredients", "stat-recipes", "stat-menus"].map((id) => [id, document.getElementById(id)]),
     );
 
@@ -384,14 +378,6 @@
       );
     }
 
-    function renderStatus() {
-      const total = app.results.length;
-      el["search-hint"].textContent = text("searchHint", { language: languageLabel(state.lang) });
-      const form = new Intl.PluralRules(uiLanguage()).select(total);
-      const strings = UI[uiLanguage()].count ?? UI.en.count;
-      el.count.textContent = (strings[form] ?? strings.other).replace("{n}", formatNumber(total));
-    }
-
     // Right pane: description of the collection and its recipes
     function renderMenu() {
       const menu = currentMenu();
@@ -408,10 +394,7 @@
         ...[image,
         h("h3", { lang: state.lang, text: menuText(menu, "name") }),
         menuText(menu, "description") ? h("p", { lang: state.lang, text: menuText(menu, "description") }) : null,
-        menu.required_ingredients?.length
-          ? h("div", { class: "needs" }, h("span", { text: text("needs") }),
-              h("ul", { class: "chips", style: "margin: 0" }, menu.required_ingredients.map(ingredientChip)))
-          : null].filter(Boolean),
+        ].filter(Boolean),
       );
 
       const indices = menuIndices(menu);
@@ -445,6 +428,11 @@
       state.selected = index;
       renderResults();
       markSelected();
+      // When the panes are stacked (narrow screens) the details can be off screen: bring them into view
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        el.results.scrollIntoView({ block: "nearest", behavior: calm ? "auto" : "smooth" });
+      }
     }
 
     function renderStats() {
@@ -463,11 +451,6 @@
       )));
     }
 
-    function renderNotice() {
-      el.notice.hidden = !app.missing.length;
-      if (app.missing.length) el.notice.textContent = text("missingFiles", { files: app.missing.join(", ") });
-    }
-
     function applyStaticText() {
       document.documentElement.lang = uiLanguage();
       for (const node of document.querySelectorAll("[data-i18n]")) node.textContent = text(node.dataset.i18n);
@@ -479,7 +462,6 @@
       state.selected = null;
       app.tokens = tokensOf(state.query);
       app.results = runSearch();
-      renderStatus();
       renderResults();
     }
 
@@ -493,10 +475,8 @@
       if (!app.ready) return;
       renderStats();
       renderMenuSelect();
-      renderNotice();
       app.tokens = tokensOf(state.query);
       app.results = runSearch();
-      renderStatus();
       renderResults();
       renderMenu();
     }
@@ -509,8 +489,6 @@
       el.language.value = state.lang;
       app.collator = new Intl.Collator(state.lang);
       applyStaticText();
-      el.count.textContent = text("loading");
-      el["search-hint"].textContent = text("searchHint", { language: languageLabel(state.lang) });
 
       el.language.addEventListener("change", () => changeLanguage(el.language.value));
       el.search.addEventListener("input", () => { state.query = el.search.value; update(); });
@@ -532,7 +510,6 @@
       try {
         await loadData();
       } catch (error) {
-        el.count.textContent = "";
         el.results.replaceChildren(h("p", {
           class: "empty",
           role: "alert",
@@ -546,7 +523,6 @@
       state.menuId = app.menus[0]?.id ?? "";
       renderStats();
       renderMenuSelect();
-      renderNotice();
       update();
       renderMenu();
       requestAnimationFrame(() => requestAnimationFrame(() => el.mix.classList.add("is-in")));
