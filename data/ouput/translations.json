@@ -1442,7 +1442,7 @@
     "Shrimp": {
         "name": {
             "en": "Shrimp",
-            "vi": "Con tôm",
+            "vi": "Tôm",
             "id": "Udang",
             "ms": "Udang",
             "th": "กุ้ง",
@@ -1802,7 +1802,7 @@
     "Rat": {
         "name": {
             "en": "Rat",
-            "vi": "Con chuột",
+            "vi": "Chuột",
             "id": "Tikus",
             "ms": "Tikus",
             "th": "หนู",

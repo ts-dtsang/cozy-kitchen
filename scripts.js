@@ -5,18 +5,20 @@ const DATA_DIR = "data/ouput/";
 // Image links in the JSON files are relative to the parent of the images folder, which is data/
 const IMAGE_BASE = "data/";
 const STORAGE_KEY = "cozy-game-kiwi:language";
+// Used when neither a saved choice nor the browser language matches a supported language
+const DEFAULT_LANGUAGE = "vi";
 const CATEGORY_ORDER = ["normal", "dark_cuisine", "messy"];
 
 // Languages and interface texts live in translations.i18n (JSON). They are loaded at start-up by loadI18n():
 //   { "<code>": { "label": "Name shown in the language menu", "ui": { ...interface texts... } }, ... }
 // The order of the file is the order of the language menu. To add a language, add one block to that file
-// (code = the one used in data/ouput/translations.json). Missing texts fall back to English.
+// (code = the one used in data/ouput/translations.json). Texts missing in a language fall back to English.
 const I18N_FILE = "translations.i18n";
 let LANGUAGES = [];
 let UI = {};
 
 const state = {
-    lang: "vi",
+    lang: DEFAULT_LANGUAGE,
     menuId: "",
     category: "",
     tab: "menus",
@@ -76,7 +78,7 @@ function h(tag, props = {}, ...children) {
     return node;
 }
 
-// The saved language, else the first browser language we support, else English
+// The saved language, else the first browser language we support, else the default one
 function initialLanguage() {
     const supported = (code) => LANGUAGES.some((language) => language.code === code);
     try {
@@ -89,11 +91,10 @@ function initialLanguage() {
         const code = String(tag).toLowerCase().split("-")[0];
         if (supported(code)) return code;
     }
-    return "en";
+    return supported(DEFAULT_LANGUAGE) ? DEFAULT_LANGUAGE : (LANGUAGES[0]?.code ?? "en");
 }
 
 const uiLanguage = () => (UI[state.lang] ? state.lang : "en");
-const languageLabel = (code) => LANGUAGES.find((language) => language.code === code)?.label ?? code;
 
 function text(key, vars = {}) {
     const template = UI[uiLanguage()]?.[key] ?? UI.en?.[key] ?? key;
@@ -179,10 +180,6 @@ function menuText(menu, field) {
     return menu.translations?.[field]?.[state.lang] || menu[field] || "";
 }
 
-function imageUrl(path) {
-    return path ? IMAGE_BASE + path : null;
-}
-
 // ---- Loading -------------------------------------------------------------------------------------------------
 
 async function loadI18n() {
@@ -193,49 +190,38 @@ async function loadI18n() {
     UI = Object.fromEntries(Object.entries(data).map(([code, entry]) => [code, entry.ui ?? {}]));
 }
 
-async function fetchJson(files) {
-    let lastError;
-    for (const file of [].concat(files)) {
-        try {
-            const response = await fetch(DATA_DIR + file);
-            if (!response.ok) throw new Error(`${DATA_DIR}${file}: HTTP ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            lastError = error;
-        }
-    }
-    throw lastError;
+async function fetchJson(file) {
+    const response = await fetch(DATA_DIR + file);
+    if (!response.ok) throw new Error(`${DATA_DIR}${file}: HTTP ${response.status}`);
+    return response.json();
 }
 
 async function loadData() {
-    const optional = async (name, files, fallback) => {
+    const optional = async (file, fallback) => {
         try {
-            return await fetchJson(files);
+            return await fetchJson(file);
         } catch {
-            app.missing.push(name);
+            app.missing.push(file);
             return fallback;
         }
     };
     app.recipes = await fetchJson("recipes.json");
     [app.ingredients, app.menus, app.translations] = await Promise.all([
-        optional("ingredients.json", "ingredients.json", []),
-        optional("collections.json", "collections.json", []),
-        optional("translations.json", "translations.json", null),
+        optional("ingredients.json", []),
+        optional("collections.json", []),
+        optional("translations.json", null),
     ]);
 
     app.menus.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     app.ingredientByName = new Map(app.ingredients.map((ingredient) => [ingredient.name, ingredient]));
+    app.categoryIndices = new Map();
     app.recipes.forEach((recipe, index) => {
         app.recipeIndexByName.set(recipe.name, index);
         app.recipeIndexByLowerName.set(recipe.name.toLowerCase(), index);
-    });
-    app.allIndices = app.recipes.map((_, index) => index);
-
-    app.categoryIndices = new Map();
-    app.recipes.forEach((recipe, index) => {
         if (!app.categoryIndices.has(recipe.category)) app.categoryIndices.set(recipe.category, []);
         app.categoryIndices.get(recipe.category).push(index);
     });
+    app.allIndices = app.recipes.map((_, index) => index);
     app.categoryOrder = [
         ...CATEGORY_ORDER.filter((c) => app.categoryIndices.has(c)),
         ...[...app.categoryIndices.keys()].filter((c) => !CATEGORY_ORDER.includes(c)),
@@ -272,13 +258,12 @@ function menuIndices(menu) {
 }
 
 function runSearch() {
-    const scope = app.allIndices;
-    if (!app.tokens.length) return scope;
+    if (!app.tokens.length) return app.allIndices;
 
     const index = indexFor(state.lang);
     const whole = app.tokens.join(" ");
     const scored = [];
-    for (const i of scope) {
+    for (const i of app.allIndices) {
         const { name, ingredients } = index[i];
         const haystack = `${name} ${ingredients}`;
         if (!app.tokens.every((token) => haystack.includes(token))) continue;
@@ -302,23 +287,15 @@ function placeholder(label) {
     });
 }
 
-function picture(path, label, className) {
-    const url = imageUrl(path);
-    if (!url) return null;
-    const image = h("img", {
-        src: url,
-        alt: "",
-        loading: "lazy",
-        decoding: "async",
-        class: className,
-    });
-    return image;
+function picture(path) {
+    if (!path) return null;
+    return h("img", { src: IMAGE_BASE + path, alt: "", loading: "lazy", decoding: "async" });
 }
 
-function ingredientChip(name) {
+function ingredientChip(name, tokens = []) {
     const ingredient = app.ingredientByName.get(name);
     const label = nameOf(name);
-    const image = ingredient ? picture(ingredient.image, label) : null;
+    const image = ingredient ? picture(ingredient.image) : null;
     if (image) image.addEventListener("error", () => image.remove());
     return h(
         "li",
@@ -327,13 +304,29 @@ function ingredientChip(name) {
             title: ingredient ? null : text("ingredientGroup"),
         },
         image,
-        h("span", { lang: state.lang, text: label }),
+        h("span", { lang: state.lang }, highlighted(label, tokens)),
+    );
+}
+
+// Ingredients under a recipe in the results list: chips when some ingredient has a picture, else a plain line
+function ingredientLine(recipe, tokens) {
+    if (recipe.ingredients.some((name) => app.ingredientByName.get(name)?.image)) {
+        return h(
+            "ul",
+            { class: "chips" },
+            recipe.ingredients.map((name) => ingredientChip(name, tokens)),
+        );
+    }
+    return h(
+        "p",
+        { class: "inline-ingredients", lang: state.lang },
+        highlighted(recipe.ingredients.map((name) => nameOf(name)).join(", "), tokens),
     );
 }
 
 function thumbOf(recipe, label) {
     const thumb = h("div", { class: "thumb" });
-    const image = picture(recipe.image, label);
+    const image = picture(recipe.image);
     if (image) {
         image.addEventListener("error", () => thumb.replaceChildren(placeholder(label)));
         thumb.append(image);
@@ -367,13 +360,7 @@ function recipeRow(index, { tokens = [], withIngredients = false } = {}) {
                 h("span", { class: "badge", text: categoryLabel(recipe.category) }),
             ),
             label !== recipe.name ? h("p", { class: "english", lang: "en", text: recipe.name }) : null,
-            withIngredients
-                ? h(
-                      "p",
-                      { class: "inline-ingredients", lang: state.lang },
-                      highlighted(recipe.ingredients.map((name) => nameOf(name)).join(", "), tokens),
-                  )
-                : null,
+            withIngredients ? ingredientLine(recipe, tokens) : null,
         ),
     );
     return h("li", {}, button);
@@ -410,7 +397,11 @@ function recipeDetail(index) {
                   "section",
                   {},
                   h("h4", { text: text("ingredientsTitle") }),
-                  h("ul", { class: "chips" }, recipe.ingredients.map(ingredientChip)),
+                  h(
+                      "ul",
+                      { class: "chips" },
+                      recipe.ingredients.map((name) => ingredientChip(name)),
+                  ),
               )
             : null,
     );
@@ -446,7 +437,7 @@ function renderMenu() {
         return;
     }
 
-    const image = picture(menu.image ?? menu.images?.splash ?? menu.images?.badge, menuText(menu, "name"));
+    const image = picture(menu.image ?? menu.images?.splash ?? menu.images?.badge);
     if (image) image.addEventListener("error", () => image.remove());
     el["menu-panel"].classList.toggle("has-image", Boolean(image));
     el["menu-panel"].replaceChildren(
@@ -563,8 +554,8 @@ function selectRecipe(index) {
 }
 
 function renderStats() {
-    const categories = new Map([...app.categoryIndices].map(([category, indices]) => [category, indices.length]));
     const order = app.categoryOrder;
+    const count = (category) => app.categoryIndices.get(category).length;
 
     el["stat-ingredients"].textContent = app.missing.includes("ingredients.json")
         ? "–"
@@ -572,12 +563,12 @@ function renderStats() {
     el["stat-recipes"].textContent = formatNumber(app.recipes.length);
     el["stat-menus"].textContent = app.missing.includes("collections.json") ? "–" : formatNumber(app.menus.length);
 
-    el.mix.setAttribute("aria-label", order.map((c) => `${categoryLabel(c)} ${categories.get(c)}`).join(", "));
+    el.mix.setAttribute("aria-label", order.map((c) => `${categoryLabel(c)} ${count(c)}`).join(", "));
     el.mix.replaceChildren(
         ...order.map((c) =>
             h("span", {
                 "data-category": c,
-                style: `flex: ${categories.get(c)} 1 0`,
+                style: `flex: ${count(c)} 1 0`,
             }),
         ),
     );
@@ -588,7 +579,7 @@ function renderStats() {
                 { "data-category": c },
                 h("i", { "aria-hidden": "true" }),
                 categoryLabel(c),
-                h("b", { text: formatNumber(categories.get(c)) }),
+                h("b", { text: formatNumber(count(c)) }),
             ),
         ),
     );
@@ -600,12 +591,17 @@ function applyStaticText() {
     el.search.placeholder = text("searchPlaceholder");
 }
 
-// Re-run the search (left pane). A new search always goes back to the list of matches.
-function update() {
-    state.selected = null;
+// Run the search again and redraw the left frame (a language change keeps the recipe being viewed)
+function refreshResults() {
     app.tokens = tokensOf(state.query);
     app.results = runSearch();
     renderResults();
+}
+
+// A new search always goes back to the list of matches
+function update() {
+    state.selected = null;
+    refreshResults();
 }
 
 // One language for the interface and the search
@@ -623,9 +619,7 @@ function changeLanguage(code) {
     renderStats();
     renderMenuSelect();
     renderCategorySelect();
-    app.tokens = tokensOf(state.query);
-    app.results = runSearch();
-    renderResults();
+    refreshResults();
     renderRight();
 }
 
