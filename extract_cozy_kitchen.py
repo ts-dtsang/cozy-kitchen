@@ -772,7 +772,7 @@ def main() -> None:
         print("[4/7] Parsing the Odin data")
         data = parse_odin(blob)
 
-        # Menu collections
+        # Collections
         menu_data = parse_odin(find_menu_blob(assets))
 
         print("[5/7] Reading the I2 Localization terms")
@@ -810,7 +810,7 @@ def main() -> None:
     write_json(args.out_dir / "recipes.json", recipes)
     write_json(args.out_dir / "ingredients.json", ingredients)
     write_json(args.out_dir / "translations.json", translations)
-    write_json(args.out_dir / "menu-collections.json", build_menu_collections(menu_data, lookup))
+    write_json(args.out_dir / "collections.json", build_menu_collections(menu_data, lookup))
 
     per_category = Counter(recipe["category"] for recipe in recipes)
     print(f"Done -> {args.out_dir}")

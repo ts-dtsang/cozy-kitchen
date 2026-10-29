@@ -1,8 +1,10 @@
-# Cozy Kitchen Wiki Data
+# Cozy Kitchen Wiki
 
 Bộ công cụ trích xuất công thức, nguyên liệu, bản dịch (15 ngôn ngữ) và hình ảnh từ game **Cozy Kitchen** (Unity WebGL).
 
 * **Demo / Build:** [ts-dtsang.github.io/cozy-kitchen](https://ts-dtsang.github.io/cozy-kitchen/)
+* **Local:** python3 -m http.server 8090
+  * http://localhost:8090/
 
 ---
 
@@ -37,13 +39,10 @@ Bộ công cụ trích xuất công thức, nguyên liệu, bản dịch (15 ng�
   ```bash
   pip install -r requirements.txt
   ```
-- **Kết nối mạng**: Cần để tải bundle và Google Sheet chứa thông tin menu.
 
 ---
 
 ## 📥 Chuẩn bị dữ liệu đầu vào
-
-Tải thủ công 2 file từ trình duyệt (F12 → tab **Network** khi mở game):
 
 1. `data/src/cozy-kitchen.data.br`: File build chính (`<hash>.data.br`).
 2. `data/src/catalog.bin`: File catalog dùng để tải bundle.

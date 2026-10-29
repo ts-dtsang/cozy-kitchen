@@ -7,71 +7,16 @@ const IMAGE_BASE = "data/";
 const STORAGE_KEY = "cozy-game-kiwi:language";
 const CATEGORY_ORDER = ["normal", "dark_cuisine", "messy"];
 
-// Supported languages: they drive both the interface and the search. To add one, add an entry here
-// (code = the one used in translations.json) and, optionally, its interface texts in UI below.
-const LANGUAGES = [
-    { code: "en", label: "English" },
-    { code: "vi", label: "Tiếng Việt" },
-];
-
-// Interface texts. A language without an entry here falls back to English: add one to translate the interface.
-const UI = {
-    en: {
-        ingredients: "Ingredients",
-        recipes: "Recipes",
-        menus: "Menu collections",
-        categories: {
-            normal: "Normal",
-            dark_cuisine: "Dark cuisine",
-            messy: "Messy",
-        },
-        searchPlaceholder: "Recipe or ingredient name",
-        languageLabel: "Language",
-        menuLabel: "Menu collection",
-        tabCategories: "Categories",
-        categoryLabel: "Category",
-        categoryRecipes: "{n} recipes in this category",
-        noCategories: "No categories available.",
-        back: "Back to results",
-        ingredientsTitle: "Ingredients",
-        noMenus: "No menu collections available.",
-        menuEmpty: "This collection has no recipes.",
-        noResults:
-            "No recipes match “{query}”. Check the spelling, or switch the language to search names in another language.",
-        loading: "Loading recipes…",
-        loadError:
-            "Couldn't load the data. Open this page through a web server (for example, run python3 -m http.server in the project folder) and check that {path} exists.",
-        missingFiles: "Couldn't load {files}. Names fall back to English and some counts may be missing.",
-        ingredientGroup: "Ingredient group",
-    },
-    vi: {
-        ingredients: "Nguyên liệu",
-        recipes: "Món ăn",
-        menus: "Bộ sưu tập menu",
-        categories: { normal: "Thường", dark_cuisine: "Hắc ám", messy: "Lộn xộn" },
-        searchPlaceholder: "Tên món hoặc tên nguyên liệu",
-        languageLabel: "Ngôn ngữ",
-        menuLabel: "Bộ sưu tập menu",
-        tabCategories: "Danh mục",
-        categoryLabel: "Danh mục",
-        categoryRecipes: "{n} món trong danh mục này",
-        noCategories: "Chưa có danh mục nào.",
-        back: "Quay lại kết quả",
-        ingredientsTitle: "Nguyên liệu",
-        noMenus: "Chưa có bộ sưu tập menu nào.",
-        menuEmpty: "Bộ sưu tập này chưa có món ăn.",
-        noResults:
-            "Không có món nào khớp “{query}”. Hãy kiểm tra chính tả, hoặc đổi ngôn ngữ để tìm theo tên ở ngôn ngữ khác.",
-        loading: "Đang tải món ăn…",
-        loadError:
-            "Không tải được dữ liệu. Hãy mở trang qua một web server (ví dụ chạy python3 -m http.server trong thư mục dự án) và kiểm tra file {path}.",
-        missingFiles: "Không tải được {files}. Tên sẽ hiển thị bằng tiếng Anh và một số số liệu có thể bị thiếu.",
-        ingredientGroup: "Nhóm nguyên liệu",
-    },
-};
+// Languages and interface texts live in translations.i18n (JSON). They are loaded at start-up by loadI18n():
+//   { "<code>": { "label": "Name shown in the language menu", "ui": { ...interface texts... } }, ... }
+// The order of the file is the order of the language menu. To add a language, add one block to that file
+// (code = the one used in data/ouput/translations.json). Missing texts fall back to English.
+const I18N_FILE = "translations.i18n";
+let LANGUAGES = [];
+let UI = {};
 
 const state = {
-    lang: initialLanguage(),
+    lang: "vi",
     menuId: "",
     category: "",
     tab: "menus",
@@ -131,16 +76,18 @@ function h(tag, props = {}, ...children) {
     return node;
 }
 
+// The saved language, else the first browser language we support, else English
 function initialLanguage() {
+    const supported = (code) => LANGUAGES.some((language) => language.code === code);
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved === "en" || saved === "vi") return saved;
+        if (saved && supported(saved)) return saved;
     } catch {
         /* storage can be unavailable */
     }
     for (const tag of navigator.languages || [navigator.language]) {
         const code = String(tag).toLowerCase().split("-")[0];
-        if (code === "vi") return "vi";
+        if (supported(code)) return code;
     }
     return "en";
 }
@@ -149,12 +96,12 @@ const uiLanguage = () => (UI[state.lang] ? state.lang : "en");
 const languageLabel = (code) => LANGUAGES.find((language) => language.code === code)?.label ?? code;
 
 function text(key, vars = {}) {
-    const template = UI[uiLanguage()][key] ?? UI.en[key] ?? key;
+    const template = UI[uiLanguage()]?.[key] ?? UI.en?.[key] ?? key;
     return template.replace(/\{(\w+)\}/g, (_, name) => String(vars[name] ?? `{${name}}`));
 }
 
 function categoryLabel(category) {
-    return UI[uiLanguage()].categories[category] ?? UI.en.categories[category] ?? category;
+    return UI[uiLanguage()]?.categories?.[category] ?? UI.en?.categories?.[category] ?? category;
 }
 
 const formatNumber = (n) => new Intl.NumberFormat(state.lang).format(n);
@@ -238,6 +185,14 @@ function imageUrl(path) {
 
 // ---- Loading -------------------------------------------------------------------------------------------------
 
+async function loadI18n() {
+    const response = await fetch(I18N_FILE);
+    if (!response.ok) throw new Error(`${I18N_FILE}: HTTP ${response.status}`);
+    const data = await response.json();
+    LANGUAGES = Object.entries(data).map(([code, entry]) => ({ code, label: entry.label ?? code }));
+    UI = Object.fromEntries(Object.entries(data).map(([code, entry]) => [code, entry.ui ?? {}]));
+}
+
 async function fetchJson(files) {
     let lastError;
     for (const file of [].concat(files)) {
@@ -264,7 +219,7 @@ async function loadData() {
     app.recipes = await fetchJson("recipes.json");
     [app.ingredients, app.menus, app.translations] = await Promise.all([
         optional("ingredients.json", "ingredients.json", []),
-        optional("menu-collections.json", ["menu-collections.json", "menu_collections.json"], []),
+        optional("collections.json", "collections.json", []),
         optional("translations.json", "translations.json", null),
     ]);
 
@@ -615,7 +570,7 @@ function renderStats() {
         ? "–"
         : formatNumber(app.ingredients.length);
     el["stat-recipes"].textContent = formatNumber(app.recipes.length);
-    el["stat-menus"].textContent = app.missing.includes("menu-collections.json") ? "–" : formatNumber(app.menus.length);
+    el["stat-menus"].textContent = app.missing.includes("collections.json") ? "–" : formatNumber(app.menus.length);
 
     el.mix.setAttribute("aria-label", order.map((c) => `${categoryLabel(c)} ${categories.get(c)}`).join(", "));
     el.mix.replaceChildren(
@@ -677,6 +632,21 @@ function changeLanguage(code) {
 // ---- Start ---------------------------------------------------------------------------------------------------
 
 async function start() {
+    try {
+        await loadI18n();
+    } catch (error) {
+        console.error(error);
+        el.results.replaceChildren(
+            h("p", {
+                class: "empty",
+                role: "alert",
+                text: `Couldn't load ${I18N_FILE}. Open this page through a web server (for example, run python3 -m http.server in the project folder) and check that the file exists.`,
+            }),
+        );
+        return;
+    }
+    state.lang = initialLanguage();
+
     el.language.replaceChildren(
         ...LANGUAGES.map((language) =>
             h("option", {

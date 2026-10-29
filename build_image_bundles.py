@@ -94,7 +94,7 @@ class Catalog:
 
 
 def collect_image_bundles(catalog: Catalog) -> dict[str, dict]:
-    """Map image name -> {folder, key, bundles} for dishes and menu collections."""
+    """Map image name -> {folder, key, bundles} for dishes and collections."""
     images: dict[str, dict] = {}
     bundles_of: dict[str, set[str]] = defaultdict(set)
 
