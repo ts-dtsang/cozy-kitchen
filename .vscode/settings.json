@@ -24,5 +24,11 @@
         "prettier.printWidth": 120,
         "prettier.tabWidth": 4,
         "editor.formatOnSave": true
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.printWidth": 120,
+        "prettier.tabWidth": 4,
+        "editor.formatOnSave": true
     }
 }
