@@ -4,7 +4,7 @@
     "ui": {
       "ingredients": "Ingredients",
       "recipes": "Recipes",
-      "menus": "Collections",
+      "collections": "Collections",
       "categories": {
         "normal": "Normal",
         "dark_cuisine": "Dark cuisine",
@@ -12,7 +12,7 @@
       },
       "searchPlaceholder": "Recipe or ingredient name",
       "languageLabel": "Language",
-      "menuLabel": "Menu collection",
+      "collectionLabel": "Menu collection",
       "tabCategories": "Categories",
       "categoryLabel": "Category",
       "categoryRecipes": "{n} recipes in this category",
@@ -23,7 +23,10 @@
       "menuEmpty": "This collection has no recipes.",
       "noResults": "No recipes match “{query}”. Check the spelling, or switch the language to search names in another language.",
       "loadError": "Couldn't load the data. Open this page through a web server (for example, run python3 -m http.server in the project folder) and check that {path} exists.",
-      "ingredientGroup": "Ingredient group"
+      "ingredientGroup": "Ingredient group",
+      "groupMembers": "{n} ingredients in this group",
+      "noGroups": "No ingredient groups available.",
+      "groupEmpty": "This group has no ingredients."
     }
   },
   "vi": {
@@ -31,7 +34,7 @@
     "ui": {
       "ingredients": "Nguyên liệu",
       "recipes": "Món ăn",
-      "menus": "Bộ sưu tập",
+      "collections": "Bộ sưu tập",
       "categories": {
         "normal": "Thường",
         "dark_cuisine": "Hắc ám",
@@ -39,18 +42,21 @@
       },
       "searchPlaceholder": "Tên món hoặc tên nguyên liệu",
       "languageLabel": "Ngôn ngữ",
-      "menuLabel": "Bộ sưu tập",
+      "collectionLabel": "Bộ sưu tập",
       "tabCategories": "Danh mục",
       "categoryLabel": "Danh mục",
       "categoryRecipes": "{n} món trong danh mục này",
       "noCategories": "Chưa có danh mục nào.",
-      "back": "Quay lại kết quả",
+      "back": "Quay lại",
       "ingredientsTitle": "Nguyên liệu",
       "noMenus": "Chưa có bộ sưu tập nào.",
       "menuEmpty": "Bộ sưu tập này chưa có món ăn.",
       "noResults": "Không có món nào khớp “{query}”. Hãy kiểm tra chính tả, hoặc đổi ngôn ngữ để tìm theo tên ở ngôn ngữ khác.",
       "loadError": "Không tải được dữ liệu. Hãy mở trang qua một web server (ví dụ chạy python3 -m http.server trong thư mục dự án) và kiểm tra file {path}.",
-      "ingredientGroup": "Nhóm nguyên liệu"
+      "ingredientGroup": "Nhóm nguyên liệu",
+      "groupMembers": "{n} nguyên liệu trong nhóm này",
+      "noGroups": "Chưa có nhóm nguyên liệu nào.",
+      "groupEmpty": "Nhóm này chưa có nguyên liệu nào."
     }
   },
   "id": {
@@ -58,7 +64,7 @@
     "ui": {
       "ingredients": "Bahan",
       "recipes": "Resep",
-      "menus": "Koleksi",
+      "collections": "Koleksi",
       "categories": {
         "normal": "Normal",
         "dark_cuisine": "Masakan gelap",
@@ -66,7 +72,7 @@
       },
       "searchPlaceholder": "Nama resep atau bahan",
       "languageLabel": "Bahasa",
-      "menuLabel": "Koleksi menu",
+      "collectionLabel": "Koleksi menu",
       "tabCategories": "Kategori",
       "categoryLabel": "Kategori",
       "categoryRecipes": "{n} resep dalam kategori ini",
@@ -77,7 +83,10 @@
       "menuEmpty": "Koleksi ini belum memiliki resep.",
       "noResults": "Tidak ada resep yang cocok dengan “{query}”. Periksa ejaan, atau ganti bahasa untuk mencari nama dalam bahasa lain.",
       "loadError": "Gagal memuat data. Buka halaman ini melalui web server (misalnya jalankan python3 -m http.server di folder proyek) dan pastikan {path} ada.",
-      "ingredientGroup": "Kelompok bahan"
+      "ingredientGroup": "Kelompok bahan",
+      "groupMembers": "{n} bahan dalam kelompok ini",
+      "noGroups": "Belum ada kelompok bahan.",
+      "groupEmpty": "Kelompok ini belum memiliki bahan."
     }
   },
   "ms": {
@@ -85,7 +94,7 @@
     "ui": {
       "ingredients": "Bahan",
       "recipes": "Resipi",
-      "menus": "Koleksi",
+      "collections": "Koleksi",
       "categories": {
         "normal": "Biasa",
         "dark_cuisine": "Masakan gelap",
@@ -93,7 +102,7 @@
       },
       "searchPlaceholder": "Nama resipi atau bahan",
       "languageLabel": "Bahasa",
-      "menuLabel": "Koleksi menu",
+      "collectionLabel": "Koleksi menu",
       "tabCategories": "Kategori",
       "categoryLabel": "Kategori",
       "categoryRecipes": "{n} resipi dalam kategori ini",
@@ -103,8 +112,11 @@
       "noMenus": "Tiada koleksi tersedia.",
       "menuEmpty": "Koleksi ini tiada resipi.",
       "noResults": "Tiada resipi sepadan dengan “{query}”. Semak ejaan, atau tukar bahasa untuk mencari nama dalam bahasa lain.",
-      "loadError": "Gagal memuatkan data. Buka halaman ini melalui pelayan web (contohnya jalankan python3 -m http.server dalam folder projek) dan pastikan {path} wujud.",
-      "ingredientGroup": "Kumpulan bahan"
+      "loadError": "Gagal memuatkan data. Buka halaman ini melalui pelayan web (contohnya jalankan python3 -m http.server dalam folder projek) và pastikan {path} wujud.",
+      "ingredientGroup": "Kumpulan bahan",
+      "groupMembers": "{n} bahan dalam kumpulan ini",
+      "noGroups": "Tiada kumpulan bahan tersedia.",
+      "groupEmpty": "Kumpulan ini tiada bahan."
     }
   },
   "th": {
@@ -112,7 +124,7 @@
     "ui": {
       "ingredients": "วัตถุดิบ",
       "recipes": "สูตรอาหาร",
-      "menus": "คอลเลกชัน",
+      "collections": "คอลเลกชัน",
       "categories": {
         "normal": "ปกติ",
         "dark_cuisine": "อาหารมืด",
@@ -120,7 +132,7 @@
       },
       "searchPlaceholder": "ชื่อสูตรหรือวัตถุดิบ",
       "languageLabel": "ภาษา",
-      "menuLabel": "คอลเลกชันเมนู",
+      "collectionLabel": "คอลเลกชันเมนู",
       "tabCategories": "หมวดหมู่",
       "categoryLabel": "หมวดหมู่",
       "categoryRecipes": "{n} สูตรในหมวดหมู่นี้",
@@ -131,7 +143,10 @@
       "menuEmpty": "คอลเลกชันนี้ยังไม่มีสูตรอาหาร",
       "noResults": "ไม่พบสูตรอาหารที่ตรงกับ “{query}” ลองตรวจสอบตัวสะกด หรือเปลี่ยนภาษาเพื่อค้นหาชื่อในภาษาอื่น",
       "loadError": "โหลดข้อมูลไม่สำเร็จ โปรดเปิดหน้านี้ผ่านเว็บเซิร์ฟเวอร์ (เช่น รัน python3 -m http.server ในโฟลเดอร์โปรเจกต์) และตรวจสอบว่ามีไฟล์ {path}",
-      "ingredientGroup": "กลุ่มวัตถุดิบ"
+      "ingredientGroup": "กลุ่มวัตถุดิบ",
+      "groupMembers": "วัตถุดิบ {n} รายการในกลุ่มนี้",
+      "noGroups": "ยังไม่มีกลุ่มวัตถุดิบ",
+      "groupEmpty": "กลุ่มนี้ยังไม่มีวัตถุดิบ"
     }
   },
   "ru": {
@@ -139,7 +154,7 @@
     "ui": {
       "ingredients": "Ингредиенты",
       "recipes": "Рецепты",
-      "menus": "Коллекции",
+      "collections": "Коллекции",
       "categories": {
         "normal": "Обычное",
         "dark_cuisine": "Тёмная кухня",
@@ -147,7 +162,7 @@
       },
       "searchPlaceholder": "Название рецепта или ингредиента",
       "languageLabel": "Язык",
-      "menuLabel": "Коллекция меню",
+      "collectionLabel": "Коллекция меню",
       "tabCategories": "Категории",
       "categoryLabel": "Категория",
       "categoryRecipes": "Рецептов в этой категории: {n}",
@@ -158,7 +173,10 @@
       "menuEmpty": "В этой коллекции нет рецептов.",
       "noResults": "Нет рецептов, подходящих под «{query}». Проверьте написание или смените язык, чтобы искать названия на другом языке.",
       "loadError": "Не удалось загрузить данные. Откройте страницу через веб-сервер (например, запустите python3 -m http.server в папке проекта) и проверьте, что файл {path} существует.",
-      "ingredientGroup": "Группа ингредиентов"
+      "ingredientGroup": "Группа ингредиентов",
+      "groupMembers": "Ингредиентов в этой группе: {n}",
+      "noGroups": "Групп ингредиентов пока нет.",
+      "groupEmpty": "В этой группе пока нет ингредиентов."
     }
   },
   "hi": {
@@ -166,7 +184,7 @@
     "ui": {
       "ingredients": "सामग्री",
       "recipes": "रेसिपी",
-      "menus": "संग्रह",
+      "collections": "संग्रह",
       "categories": {
         "normal": "सामान्य",
         "dark_cuisine": "डार्क क्यूज़ीन",
@@ -174,7 +192,7 @@
       },
       "searchPlaceholder": "रेसिपी या सामग्री का नाम",
       "languageLabel": "भाषा",
-      "menuLabel": "मेनू संग्रह",
+      "collectionLabel": "मेनू संग्रह",
       "tabCategories": "श्रेणियाँ",
       "categoryLabel": "श्रेणी",
       "categoryRecipes": "इस श्रेणी में {n} रेसिपी",
@@ -185,7 +203,10 @@
       "menuEmpty": "इस संग्रह में कोई रेसिपी नहीं है।",
       "noResults": "“{query}” से मेल खाती कोई रेसिपी नहीं मिली। वर्तनी जाँचें, या किसी दूसरी भाषा में नाम खोजने के लिए भाषा बदलें।",
       "loadError": "डेटा लोड नहीं हो सका। कृपया इस पेज को किसी वेब सर्वर के ज़रिए खोलें (उदाहरण के लिए प्रोजेक्ट फ़ोल्डर में python3 -m http.server चलाएँ) और जाँचें कि {path} मौजूद है।",
-      "ingredientGroup": "सामग्री समूह"
+      "ingredientGroup": "सामग्री समूह",
+      "groupMembers": "इस समूह में {n} सामग्री",
+      "noGroups": "कोई सामग्री समूह उपलब्ध नहीं है।",
+      "groupEmpty": "इस समूह में कोई सामग्री नहीं है।"
     }
   },
   "de": {
@@ -193,7 +214,7 @@
     "ui": {
       "ingredients": "Zutaten",
       "recipes": "Rezepte",
-      "menus": "Sammlungen",
+      "collections": "Sammlungen",
       "categories": {
         "normal": "Normal",
         "dark_cuisine": "Dunkle Küche",
@@ -201,7 +222,7 @@
       },
       "searchPlaceholder": "Rezept- oder Zutatenname",
       "languageLabel": "Sprache",
-      "menuLabel": "Menüsammlung",
+      "collectionLabel": "Menüsammlung",
       "tabCategories": "Kategorien",
       "categoryLabel": "Kategorie",
       "categoryRecipes": "{n} Rezepte in dieser Kategorie",
@@ -212,7 +233,10 @@
       "menuEmpty": "Diese Sammlung enthält keine Rezepte.",
       "noResults": "Keine Rezepte passen zu „{query}“. Prüfe die Schreibweise oder wechsle die Sprache, um Namen in einer anderen Sprache zu suchen.",
       "loadError": "Die Daten konnten nicht geladen werden. Öffne diese Seite über einen Webserver (z. B. python3 -m http.server im Projektordner) und prüfe, ob {path} existiert.",
-      "ingredientGroup": "Zutatengruppe"
+      "ingredientGroup": "Zutatengruppe",
+      "groupMembers": "{n} Zutaten in dieser Gruppe",
+      "noGroups": "Keine Zutatengruppen vorhanden.",
+      "groupEmpty": "Diese Gruppe enthält keine Zutaten."
     }
   },
   "fr": {
@@ -220,7 +244,7 @@
     "ui": {
       "ingredients": "Ingrédients",
       "recipes": "Recettes",
-      "menus": "Collections",
+      "collections": "Collections",
       "categories": {
         "normal": "Normal",
         "dark_cuisine": "Cuisine sombre",
@@ -228,7 +252,7 @@
       },
       "searchPlaceholder": "Nom de recette ou d’ingrédient",
       "languageLabel": "Langue",
-      "menuLabel": "Collection de menus",
+      "collectionLabel": "Collection de menus",
       "tabCategories": "Catégories",
       "categoryLabel": "Catégorie",
       "categoryRecipes": "{n} recettes dans cette catégorie",
@@ -239,7 +263,10 @@
       "menuEmpty": "Cette collection ne contient aucune recette.",
       "noResults": "Aucune recette ne correspond à « {query} ». Vérifiez l’orthographe ou changez de langue pour chercher les noms dans une autre langue.",
       "loadError": "Impossible de charger les données. Ouvrez cette page via un serveur web (par exemple, lancez python3 -m http.server dans le dossier du projet) et vérifiez que {path} existe.",
-      "ingredientGroup": "Groupe d’ingrédients"
+      "ingredientGroup": "Groupe d’ingrédients",
+      "groupMembers": "{n} ingrédients dans ce groupe",
+      "noGroups": "Aucun groupe d’ingrédients disponible.",
+      "groupEmpty": "Ce groupe ne contient aucun ingrédient."
     }
   },
   "es": {
@@ -247,7 +274,7 @@
     "ui": {
       "ingredients": "Ingredientes",
       "recipes": "Recetas",
-      "menus": "Colecciones",
+      "collections": "Colecciones",
       "categories": {
         "normal": "Normal",
         "dark_cuisine": "Cocina oscura",
@@ -255,7 +282,7 @@
       },
       "searchPlaceholder": "Nombre de receta o ingrediente",
       "languageLabel": "Idioma",
-      "menuLabel": "Colección de menús",
+      "collectionLabel": "Colección de menús",
       "tabCategories": "Categorías",
       "categoryLabel": "Categoría",
       "categoryRecipes": "{n} recetas en esta categoría",
@@ -266,7 +293,10 @@
       "menuEmpty": "Esta colección no tiene recetas.",
       "noResults": "Ninguna receta coincide con «{query}». Revisa la ortografía o cambia el idioma para buscar nombres en otro idioma.",
       "loadError": "No se pudieron cargar los datos. Abre esta página mediante un servidor web (por ejemplo, ejecuta python3 -m http.server en la carpeta del proyecto) y comprueba que {path} existe.",
-      "ingredientGroup": "Grupo de ingredientes"
+      "ingredientGroup": "Grupo de ingredientes",
+      "groupMembers": "{n} ingredientes en este grupo",
+      "noGroups": "No hay grupos de ingredientes disponibles.",
+      "groupEmpty": "Este grupo no tiene ingredientes."
     }
   },
   "it": {
@@ -274,7 +304,7 @@
     "ui": {
       "ingredients": "Ingredienti",
       "recipes": "Ricette",
-      "menus": "Raccolte",
+      "collections": "Raccolte",
       "categories": {
         "normal": "Normale",
         "dark_cuisine": "Cucina oscura",
@@ -282,7 +312,7 @@
       },
       "searchPlaceholder": "Nome della ricetta o dell’ingrediente",
       "languageLabel": "Lingua",
-      "menuLabel": "Raccolta di menu",
+      "collectionLabel": "Raccolta di menu",
       "tabCategories": "Categorie",
       "categoryLabel": "Categoria",
       "categoryRecipes": "{n} ricette in questa categoria",
@@ -293,7 +323,10 @@
       "menuEmpty": "Questa raccolta non contiene ricette.",
       "noResults": "Nessuna ricetta corrisponde a “{query}”. Controlla l’ortografia o cambia lingua per cercare i nomi in un’altra lingua.",
       "loadError": "Impossibile caricare i dati. Apri questa pagina tramite un server web (ad esempio, esegui python3 -m http.server nella cartella del progetto) e verifica che {path} esista.",
-      "ingredientGroup": "Gruppo di ingredienti"
+      "ingredientGroup": "Gruppo di ingredienti",
+      "groupMembers": "{n} ingredienti in questo gruppo",
+      "noGroups": "Nessun gruppo di ingredienti disponibile.",
+      "groupEmpty": "Questo gruppo non contiene ingredienti."
     }
   },
   "tr": {
@@ -301,7 +334,7 @@
     "ui": {
       "ingredients": "Malzemeler",
       "recipes": "Tarifler",
-      "menus": "Koleksiyonlar",
+      "collections": "Koleksiyonlar",
       "categories": {
         "normal": "Normal",
         "dark_cuisine": "Karanlık mutfak",
@@ -309,7 +342,7 @@
       },
       "searchPlaceholder": "Tarif veya malzeme adı",
       "languageLabel": "Dil",
-      "menuLabel": "Menü koleksiyonu",
+      "collectionLabel": "Menü koleksiyonu",
       "tabCategories": "Kategoriler",
       "categoryLabel": "Kategori",
       "categoryRecipes": "Bu kategoride {n} tarif var",
@@ -319,8 +352,11 @@
       "noMenus": "Kullanılabilir koleksiyon yok.",
       "menuEmpty": "Bu koleksiyonda tarif yok.",
       "noResults": "“{query}” ile eşleşen tarif bulunamadı. Yazımı kontrol edin veya adları başka bir dilde aramak için dili değiştirin.",
-      "loadError": "Veriler yüklenemedi. Bu sayfayı bir web sunucusu üzerinden açın (örneğin proje klasöründe python3 -m http.server çalıştırın) ve {path} dosyasının var olduğunu kontrol edin.",
-      "ingredientGroup": "Malzeme grubu"
+      "loadError": "Veriler yüklenemedi. Bu sayfayı bir web sunucusu üzerinden açın (örneğin proje klasöründe python3 -m http.server çalıştırın) và {path} dosyasının var olduğunu kontrol edin.",
+      "ingredientGroup": "Malzeme grubu",
+      "groupMembers": "Bu grupta {n} malzeme var",
+      "noGroups": "Kullanılabilir malzeme grubu yok.",
+      "groupEmpty": "Bu grupta malzeme yok."
     }
   },
   "ko": {
@@ -328,7 +364,7 @@
     "ui": {
       "ingredients": "재료",
       "recipes": "레시피",
-      "menus": "컬렉션",
+      "collections": "컬렉션",
       "categories": {
         "normal": "일반",
         "dark_cuisine": "암흑 요리",
@@ -336,7 +372,7 @@
       },
       "searchPlaceholder": "레시피 또는 재료 이름",
       "languageLabel": "언어",
-      "menuLabel": "메뉴 컬렉션",
+      "collectionLabel": "메뉴 컬렉션",
       "tabCategories": "카테고리",
       "categoryLabel": "카테고리",
       "categoryRecipes": "이 카테고리의 레시피 {n}개",
@@ -347,7 +383,10 @@
       "menuEmpty": "이 컬렉션에는 레시피가 없습니다.",
       "noResults": "“{query}”와(과) 일치하는 레시피가 없습니다. 철자를 확인하거나, 다른 언어로 이름을 검색하려면 언어를 바꿔 보세요.",
       "loadError": "데이터를 불러오지 못했습니다. 웹 서버를 통해 이 페이지를 열고(예: 프로젝트 폴더에서 python3 -m http.server 실행) {path} 파일이 있는지 확인하세요.",
-      "ingredientGroup": "재료 그룹"
+      "ingredientGroup": "재료 그룹",
+      "groupMembers": "이 그룹의 재료 {n}개",
+      "noGroups": "사용 가능한 재료 그룹이 없습니다.",
+      "groupEmpty": "이 그룹에는 재료가 없습니다."
     }
   },
   "ja": {
@@ -355,7 +394,7 @@
     "ui": {
       "ingredients": "材料",
       "recipes": "レシピ",
-      "menus": "コレクション",
+      "collections": "コレクション",
       "categories": {
         "normal": "通常",
         "dark_cuisine": "闇料理",
@@ -363,7 +402,7 @@
       },
       "searchPlaceholder": "レシピ名または材料名",
       "languageLabel": "言語",
-      "menuLabel": "メニューコレクション",
+      "collectionLabel": "メニューコレクション",
       "tabCategories": "カテゴリ",
       "categoryLabel": "カテゴリ",
       "categoryRecipes": "このカテゴリのレシピ：{n}件",
@@ -374,7 +413,10 @@
       "menuEmpty": "このコレクションにはレシピがありません。",
       "noResults": "「{query}」に一致するレシピはありません。スペルを確認するか、言語を切り替えて別の言語で名前を検索してください。",
       "loadError": "データを読み込めませんでした。Webサーバー経由でこのページを開き（例：プロジェクトフォルダで python3 -m http.server を実行）、{path} が存在するか確認してください。",
-      "ingredientGroup": "材料グループ"
+      "ingredientGroup": "材料グループ",
+      "groupMembers": "このグループの材料：{n}件",
+      "noGroups": "利用できる材料グループがありません。",
+      "groupEmpty": "このグループには材料がありません。"
     }
   },
   "zh": {
@@ -382,7 +424,7 @@
     "ui": {
       "ingredients": "食材",
       "recipes": "食谱",
-      "menus": "合集",
+      "collections": "合集",
       "categories": {
         "normal": "普通",
         "dark_cuisine": "黑暗料理",
@@ -390,7 +432,7 @@
       },
       "searchPlaceholder": "食谱或食材名称",
       "languageLabel": "语言",
-      "menuLabel": "菜单合集",
+      "collectionLabel": "菜单合集",
       "tabCategories": "分类",
       "categoryLabel": "分类",
       "categoryRecipes": "该分类下共有 {n} 个食谱",
@@ -401,7 +443,10 @@
       "menuEmpty": "该合集暂无食谱。",
       "noResults": "没有与“{query}”匹配的食谱。请检查拼写，或切换语言以其他语言搜索名称。",
       "loadError": "无法加载数据。请通过 Web 服务器打开此页面（例如在项目文件夹中运行 python3 -m http.server），并确认 {path} 存在。",
-      "ingredientGroup": "食材组"
+      "ingredientGroup": "食材组",
+      "groupMembers": "该组共有 {n} 个食材",
+      "noGroups": "暂无可用食材组。",
+      "groupEmpty": "该组暂无食材。"
     }
   }
 }

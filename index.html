@@ -32,22 +32,22 @@
                         <span class="figure" id="stat-ingredients">–</span>
                         <span class="caption" data-i18n="ingredients">Ingredients</span>
                     </div>
+                    <div class="stat-header">
+                        <span class="figure" id="stat-ingredient-groups">–</span>
+                        <span class="caption" data-i18n="ingredientGroup">Ingredient group</span>
+                    </div>
+                    <div class="stat-header">
+                        <span class="figure" id="stat-collections">–</span>
+                        <span class="caption" data-i18n="collections">Collections</span>
+                    </div>
                 </div>
-
                 <div>
                     <div class="stat-header">
                         <span class="figure" id="stat-recipes">–</span>
                         <span class="caption" data-i18n="recipes">Recipes</span>
                     </div>
-                    <div class="mix" id="mix" role="img"></div>
-                    <ul class="legend" id="legend"></ul>
-                </div>
-
-                <div>
-                    <div class="stat-header">
-                        <span class="figure" id="stat-menus">–</span>
-                        <span class="caption" data-i18n="menus">Collections</span>
-                    </div>
+                    <div class="category-mix" id="category-mix" role="img"></div>
+                    <ul class="category-legend" id="category-legend"></ul>
                 </div>
             </section>
             <main class="workspace">
@@ -60,21 +60,20 @@
                         >
                         <input id="search" type="search" autocomplete="off" spellcheck="false" />
                     </div>
-                    <div class="frame" id="results"></div>
+                    <div class="frame" id="search-results"></div>
                 </section>
 
-                <!-- Right: two tabs, each with a dropdown, a short description and its recipes -->
+                <!-- Right: three tabs (collections, categories, ingredient groups), each with a dropdown, a short description and a list -->
                 <section class="pane">
                     <div class="tabs" role="tablist">
                         <button
                             class="tab"
                             type="button"
                             role="tab"
-                            id="tab-menus"
-                            aria-controls="panel-menus"
+                            id="tab-collections"
+                            aria-controls="panel-collections"
                             aria-selected="true"
-                            data-tab="menus"
-                            data-i18n="menus"
+                            data-i18n="collections"
                         >
                             Collections
                         </button>
@@ -86,20 +85,31 @@
                             aria-controls="panel-categories"
                             aria-selected="false"
                             tabindex="-1"
-                            data-tab="categories"
                             data-i18n="tabCategories"
                         >
                             Categories
                         </button>
+                        <button
+                            class="tab"
+                            type="button"
+                            role="tab"
+                            id="tab-groups"
+                            aria-controls="panel-groups"
+                            aria-selected="false"
+                            tabindex="-1"
+                            data-i18n="ingredientGroup"
+                        >
+                            Ingredient group
+                        </button>
                     </div>
 
-                    <div class="tabpanel" role="tabpanel" id="panel-menus" aria-labelledby="tab-menus">
+                    <div class="tabpanel" role="tabpanel" id="panel-collections" aria-labelledby="tab-collections">
                         <div class="field">
-                            <label for="menu" class="sr-only" data-i18n="menuLabel">Menu collection</label>
-                            <select id="menu"></select>
+                            <label for="collection" class="sr-only" data-i18n="collectionLabel">Menu collection</label>
+                            <select id="collection"></select>
                         </div>
-                        <div class="menu-panel" id="menu-panel" hidden></div>
-                        <div class="frame" id="menu-recipes"></div>
+                        <div class="info-panel" id="collection-panel" hidden></div>
+                        <div class="frame" id="collection-recipes"></div>
                     </div>
 
                     <div class="tabpanel" role="tabpanel" id="panel-categories" aria-labelledby="tab-categories" hidden>
@@ -107,8 +117,17 @@
                             <label for="category" class="sr-only" data-i18n="categoryLabel">Category</label>
                             <select id="category"></select>
                         </div>
-                        <div class="menu-panel" id="category-panel" hidden></div>
+                        <div class="info-panel" id="category-panel" hidden></div>
                         <div class="frame" id="category-recipes"></div>
+                    </div>
+
+                    <div class="tabpanel" role="tabpanel" id="panel-groups" aria-labelledby="tab-groups" hidden>
+                        <div class="field">
+                            <label for="group" class="sr-only" data-i18n="ingredientGroup">Ingredient group</label>
+                            <select id="group"></select>
+                        </div>
+                        <div class="info-panel is-group" id="group-panel" hidden></div>
+                        <div class="frame" id="group-members"></div>
                     </div>
                 </section>
             </main>

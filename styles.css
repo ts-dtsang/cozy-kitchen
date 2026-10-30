@@ -176,7 +176,7 @@ select {
     font-weight: 600;
 }
 
-.mix {
+.category-mix {
     display: flex;
     gap: 3px;
     height: 14.4px;
@@ -185,15 +185,15 @@ select {
     overflow: hidden;
     clip-path: inset(0 100% 0 0 round 999px);
 }
-.mix.is-in {
+.category-mix.is-in {
     clip-path: inset(0 0 0 0 round 999px);
     transition: clip-path 1.1s cubic-bezier(0.22, 0.8, 0.2, 1);
 }
-.mix span {
+.category-mix span {
     min-width: 4px;
     background: var(--stripe);
 }
-.legend {
+.category-legend {
     display: flex;
     flex-wrap: wrap;
     gap: 4.8px 20px;
@@ -202,18 +202,18 @@ select {
     list-style: none;
     font-size: 14.4px;
 }
-.legend li {
+.category-legend li {
     display: inline-flex;
     align-items: center;
     gap: 7.2px;
 }
-.legend i {
+.category-legend i {
     width: 11.2px;
     height: 11.2px;
     border-radius: 50%;
     background: var(--stripe);
 }
-.legend b {
+.category-legend b {
     font-variant-numeric: tabular-nums;
 }
 
@@ -285,7 +285,7 @@ select {
     min-width: 0;
 }
 
-/* Scrolling frames (results on the left, menu recipes on the right) */
+/* Scrolling frames (search results on the left, lists on the right) */
 .frame {
     height: 62vh;
     min-height: 360px;
@@ -304,8 +304,8 @@ select {
     list-style: none;
 }
 
-/* Menu collection */
-.menu-panel {
+/* Info panel: header above a list (collection, category or ingredient group) */
+.info-panel {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 6.4px 20px;
@@ -313,44 +313,58 @@ select {
     background: var(--tint);
     border-radius: 10px;
 }
-.menu-panel img {
+.info-panel img {
     grid-row: span 3;
     width: 88px;
     height: 88px;
     object-fit: cover;
     border-radius: 8px;
 }
-.menu-panel h3 {
+.info-panel h3 {
     margin: 0;
     font: 800 20px / 1.2 var(--display);
     letter-spacing: -0.02em;
 }
-.menu-panel p {
+.info-panel p {
     margin: 0;
     max-width: 68ch;
 }
-.menu-panel > :not(img) {
+.info-panel > :not(img) {
     grid-column: 2;
 }
-.menu-panel:not(.has-image) > :not(img) {
+.info-panel:not(.has-image) > :not(img) {
     grid-column: 1 / -1;
 }
-.menu-panel + .frame {
+.info-panel.is-group img {
+    object-fit: contain;
+    background: var(--paper);
+}
+.info-panel + .frame {
     height: 44vh;
     min-height: 280px;
 }
 
-/* Recipe rows (clickable) */
-.recipe {
+/* Recipe rows (clickable) and ingredient rows (members of a group) */
+.recipe,
+.member {
     display: grid;
     grid-template-columns: 56px minmax(0, 1fr);
     gap: 12px;
-    width: 100%;
     padding: 10px 12px 10px 10px;
     border: 1px solid var(--line);
-    border-left: 6px solid var(--stripe);
     border-radius: 10px;
     background: var(--panel);
+}
+.recipe .name,
+.member .name {
+    font-weight: 700;
+    font-size: 17px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.recipe {
+    width: 100%;
+    border-left: 6px solid var(--stripe);
     color: inherit;
     font: inherit;
     text-align: left;
@@ -385,12 +399,6 @@ select {
     align-items: baseline;
     gap: 3.2px 12px;
 }
-.recipe .name {
-    font-weight: 700;
-    font-size: 17px;
-    line-height: 1.3;
-    overflow-wrap: anywhere;
-}
 .badge {
     padding: 0.8px 10.4px;
     border: 1.5px solid var(--stripe);
@@ -400,22 +408,20 @@ select {
     font-weight: 700;
     white-space: nowrap;
 }
-.english {
-    margin: 0;
-    color: var(--muted);
-    font-size: 14.4px;
-}
-.inline-ingredients {
-    margin: 2px 0 0;
-    color: var(--muted);
-    font-size: 14px;
-    overflow-wrap: anywhere;
-}
 mark {
     padding: 0 0.1em;
     border-radius: 3px;
     background: var(--mark);
     color: inherit;
+}
+
+.member {
+    align-items: center;
+}
+.member-description {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.4px;
 }
 
 /* Recipe detail (shown inside the results frame) */
@@ -464,7 +470,7 @@ mark {
     font-size: 15px;
     color: var(--muted);
 }
-.detail .desc {
+.detail .description {
     margin: 0;
     max-width: 68ch;
 }
@@ -493,9 +499,14 @@ mark {
     object-fit: contain;
     background: var(--tint);
 }
-.chip.group {
-    padding-left: 11.2px;
+/* An ingredient group (Meat, Veggie, ...): any ingredient that has it.
+   Its icon is a square stamp, so it is not cropped to a circle */
+.chip.is-group {
     border-style: dashed;
+}
+.chip.is-group img {
+    border-radius: 4px;
+    background: none;
 }
 .detail .chips {
     gap: 8px;
@@ -527,7 +538,7 @@ mark {
         height: 60dvh;
         min-height: 320px;
     }
-    .menu-panel + .frame {
+    .info-panel + .frame {
         height: 50vh;
         height: 50dvh;
         min-height: 280px;
@@ -576,7 +587,8 @@ mark {
         padding: 8px;
     }
 
-    .recipe {
+    .recipe,
+    .member {
         grid-template-columns: 48px minmax(0, 1fr);
         gap: 10px;
         padding: 8px 10px 8px 8px;
@@ -586,18 +598,19 @@ mark {
         height: 48px;
         font-size: 20px;
     }
-    .recipe .name {
+    .recipe .name,
+    .member .name {
         font-size: 16px;
     }
 
-    .menu-panel {
+    .info-panel {
         grid-template-columns: minmax(0, 1fr);
         padding: 14px 16px;
     }
-    .menu-panel img {
+    .info-panel img {
         grid-row: auto;
     }
-    .menu-panel > :not(img) {
+    .info-panel > :not(img) {
         grid-column: 1;
     }
 
@@ -620,8 +633,8 @@ mark {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .mix,
-    .mix.is-in {
+    .category-mix,
+    .category-mix.is-in {
         clip-path: none;
         transition: none;
     }

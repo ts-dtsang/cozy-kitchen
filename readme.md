@@ -21,7 +21,7 @@ Bộ công cụ trích xuất công thức, nguyên liệu, bản dịch (15 ng�
     ├── src/                             # [Đầu vào thủ công]
     │   ├── catalog.bin                  # Catalog bundle
     │   └── cozy-kitchen.data.br         # Asset data chính của game
-    ├── bundles/                         # Bundle tải về (ảnh recipes, menus)
+    ├── bundles/                         # Bundle tải về (ảnh recipes, collections)
     ├── images/                          # Ảnh PNG sau trích xuất
     └── ouput/                           # JSON kết quả
         ├── recipes.json

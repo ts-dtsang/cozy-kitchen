@@ -1,6 +1,7 @@
 [
     {
         "name": "Egg",
+        "is_tag": false,
         "tags": [
             "Eggs"
         ],
@@ -10,6 +11,7 @@
     },
     {
         "name": "Sugar",
+        "is_tag": false,
         "tags": [
             "Sweet"
         ],
@@ -19,6 +21,7 @@
     },
     {
         "name": "Flour",
+        "is_tag": false,
         "tags": [
             "Starch"
         ],
@@ -28,6 +31,7 @@
     },
     {
         "name": "Rice",
+        "is_tag": false,
         "tags": [
             "Starch"
         ],
@@ -37,6 +41,7 @@
     },
     {
         "name": "Spaghetti",
+        "is_tag": false,
         "tags": [
             "Starch"
         ],
@@ -46,6 +51,7 @@
     },
     {
         "name": "Olive Oil",
+        "is_tag": false,
         "tags": [
             "Liquid"
         ],
@@ -55,6 +61,7 @@
     },
     {
         "name": "Chili Sauce",
+        "is_tag": false,
         "tags": [
             "Liquid",
             "Spicy"
@@ -65,6 +72,7 @@
     },
     {
         "name": "Pepper",
+        "is_tag": false,
         "tags": [
             "Spicy"
         ],
@@ -74,6 +82,7 @@
     },
     {
         "name": "Canned Beans",
+        "is_tag": false,
         "tags": [
             "Veggie",
             "Starch"
@@ -84,6 +93,7 @@
     },
     {
         "name": "Honey",
+        "is_tag": false,
         "tags": [
             "Sweet"
         ],
@@ -93,6 +103,7 @@
     },
     {
         "name": "Clock",
+        "is_tag": false,
         "tags": [
             "Tool"
         ],
@@ -102,6 +113,7 @@
     },
     {
         "name": "Knife",
+        "is_tag": false,
         "tags": [
             "Tool",
             "Creepy"
@@ -112,6 +124,7 @@
     },
     {
         "name": "Rolling Pin",
+        "is_tag": false,
         "tags": [
             "Tool"
         ],
@@ -121,6 +134,7 @@
     },
     {
         "name": "Whisk",
+        "is_tag": false,
         "tags": [
             "Tool"
         ],
@@ -130,6 +144,7 @@
     },
     {
         "name": "Sponge",
+        "is_tag": false,
         "tags": [
             "Tool",
             "Creepy"
@@ -140,6 +155,7 @@
     },
     {
         "name": "Dish Soap",
+        "is_tag": false,
         "tags": [
             "Liquid",
             "Creepy"
@@ -150,6 +166,7 @@
     },
     {
         "name": "Apples",
+        "is_tag": false,
         "tags": [
             "Fruit"
         ],
@@ -159,6 +176,7 @@
     },
     {
         "name": "Bananas",
+        "is_tag": false,
         "tags": [
             "Fruit"
         ],
@@ -168,6 +186,7 @@
     },
     {
         "name": "Pineapples",
+        "is_tag": false,
         "tags": [
             "Fruit",
             "Sour"
@@ -178,6 +197,7 @@
     },
     {
         "name": "Lemons",
+        "is_tag": false,
         "tags": [
             "Fruit",
             "Sour"
@@ -188,6 +208,7 @@
     },
     {
         "name": "Oranges",
+        "is_tag": false,
         "tags": [
             "Fruit",
             "Sweet",
@@ -199,6 +220,7 @@
     },
     {
         "name": "Potatoes",
+        "is_tag": false,
         "tags": [
             "Veggie",
             "Starch"
@@ -209,6 +231,7 @@
     },
     {
         "name": "Carrots",
+        "is_tag": false,
         "tags": [
             "Veggie"
         ],
@@ -218,6 +241,7 @@
     },
     {
         "name": "Onions",
+        "is_tag": false,
         "tags": [
             "Veggie"
         ],
@@ -227,6 +251,7 @@
     },
     {
         "name": "Garlic",
+        "is_tag": false,
         "tags": [
             "Veggie"
         ],
@@ -236,6 +261,7 @@
     },
     {
         "name": "Bell Peppers",
+        "is_tag": false,
         "tags": [
             "Veggie"
         ],
@@ -245,6 +271,7 @@
     },
     {
         "name": "Eggplants",
+        "is_tag": false,
         "tags": [
             "Veggie"
         ],
@@ -254,6 +281,7 @@
     },
     {
         "name": "Mushroom",
+        "is_tag": false,
         "tags": [
             "Veggie"
         ],
@@ -263,6 +291,7 @@
     },
     {
         "name": "Bacon",
+        "is_tag": false,
         "tags": [
             "Meat"
         ],
@@ -272,6 +301,7 @@
     },
     {
         "name": "Pork Ribs",
+        "is_tag": false,
         "tags": [
             "Meat"
         ],
@@ -281,6 +311,7 @@
     },
     {
         "name": "Beef Steak",
+        "is_tag": false,
         "tags": [
             "Meat"
         ],
@@ -290,6 +321,7 @@
     },
     {
         "name": "Chicken Breast",
+        "is_tag": false,
         "tags": [
             "Meat"
         ],
@@ -299,6 +331,7 @@
     },
     {
         "name": "Milk",
+        "is_tag": false,
         "tags": [
             "Dairy",
             "Milks",
@@ -310,6 +343,7 @@
     },
     {
         "name": "Butter",
+        "is_tag": false,
         "tags": [
             "Dairy"
         ],
@@ -319,6 +353,7 @@
     },
     {
         "name": "Cheese",
+        "is_tag": false,
         "tags": [
             "Dairy",
             "Cheeses"
@@ -329,6 +364,7 @@
     },
     {
         "name": "Soda",
+        "is_tag": false,
         "tags": [
             "Liquid",
             "Sour"
@@ -339,6 +375,7 @@
     },
     {
         "name": "Blue Cheese",
+        "is_tag": false,
         "tags": [
             "Dairy",
             "Creepy",
@@ -350,6 +387,7 @@
     },
     {
         "name": "Ricotta Cheese",
+        "is_tag": false,
         "tags": [
             "Dairy",
             "Cheeses"
@@ -360,6 +398,7 @@
     },
     {
         "name": "Yogurt",
+        "is_tag": false,
         "tags": [
             "Dairy"
         ],
@@ -369,6 +408,7 @@
     },
     {
         "name": "Apple Cider Vinegar",
+        "is_tag": false,
         "tags": [
             "Liquid",
             "Sour"
@@ -379,6 +419,7 @@
     },
     {
         "name": "Shrimp",
+        "is_tag": false,
         "tags": [
             "Seafood"
         ],
@@ -388,6 +429,7 @@
     },
     {
         "name": "Tuna",
+        "is_tag": false,
         "tags": [
             "Seafood"
         ],
@@ -397,6 +439,7 @@
     },
     {
         "name": "Salmon",
+        "is_tag": false,
         "tags": [
             "Seafood"
         ],
@@ -406,6 +449,7 @@
     },
     {
         "name": "Crab",
+        "is_tag": false,
         "tags": [
             "Seafood"
         ],
@@ -415,6 +459,7 @@
     },
     {
         "name": "Piranha",
+        "is_tag": false,
         "tags": [
             "Creepy",
             "Seafood"
@@ -425,6 +470,7 @@
     },
     {
         "name": "Oyster",
+        "is_tag": false,
         "tags": [
             "Seafood"
         ],
@@ -434,6 +480,7 @@
     },
     {
         "name": "Scallop",
+        "is_tag": false,
         "tags": [
             "Seafood"
         ],
@@ -443,6 +490,7 @@
     },
     {
         "name": "Lobster",
+        "is_tag": false,
         "tags": [
             "Seafood"
         ],
@@ -452,6 +500,7 @@
     },
     {
         "name": "Pigeon",
+        "is_tag": false,
         "tags": [
             "Meat"
         ],
@@ -461,6 +510,7 @@
     },
     {
         "name": "Crow",
+        "is_tag": false,
         "tags": [
             "Meat",
             "Creepy"
@@ -471,6 +521,7 @@
     },
     {
         "name": "Rat",
+        "is_tag": false,
         "tags": [
             "Meat",
             "Creepy"
@@ -481,6 +532,7 @@
     },
     {
         "name": "Bat",
+        "is_tag": false,
         "tags": [
             "Meat",
             "Creepy"
@@ -491,6 +543,7 @@
     },
     {
         "name": "Duck",
+        "is_tag": false,
         "tags": [
             "Meat"
         ],
@@ -500,6 +553,7 @@
     },
     {
         "name": "Bees",
+        "is_tag": false,
         "tags": [
             "Creepy"
         ],
@@ -509,6 +563,7 @@
     },
     {
         "name": "Old Shoes",
+        "is_tag": false,
         "tags": [
             "Tool",
             "Creepy"
@@ -519,6 +574,7 @@
     },
     {
         "name": "Starfish",
+        "is_tag": false,
         "tags": [
             "Creepy",
             "Seafood"
@@ -529,6 +585,7 @@
     },
     {
         "name": "Octopus",
+        "is_tag": false,
         "tags": [
             "Seafood"
         ],
@@ -538,6 +595,7 @@
     },
     {
         "name": "Frog",
+        "is_tag": false,
         "tags": [
             "Meat",
             "Creepy"
@@ -545,5 +603,253 @@
         "auto_unlock": false,
         "description": "A bug-eyed, green amphibian built for jumping. Its slender legs look like tiny chicken wings but carry a much higher spring capacity before hitting the pan.",
         "image": "images/ingredients/frog.png"
+    },
+    {
+        "name": "Eggs",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/eggs.png",
+        "members": [
+            "Egg"
+        ],
+        "priority": 3
+    },
+    {
+        "name": "Sweet",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/sweet.png",
+        "members": [
+            "Sugar",
+            "Honey",
+            "Oranges"
+        ],
+        "priority": 6
+    },
+    {
+        "name": "Starch",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/starch.png",
+        "members": [
+            "Flour",
+            "Rice",
+            "Spaghetti",
+            "Canned Beans",
+            "Potatoes"
+        ],
+        "priority": 6
+    },
+    {
+        "name": "Liquid",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/liquid.png",
+        "members": [
+            "Olive Oil",
+            "Chili Sauce",
+            "Dish Soap",
+            "Milk",
+            "Soda",
+            "Apple Cider Vinegar"
+        ],
+        "priority": 6
+    },
+    {
+        "name": "Spicy",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/spicy.png",
+        "members": [
+            "Chili Sauce",
+            "Pepper"
+        ],
+        "priority": 5
+    },
+    {
+        "name": "Veggie",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/veggie.png",
+        "members": [
+            "Canned Beans",
+            "Potatoes",
+            "Carrots",
+            "Onions",
+            "Garlic",
+            "Bell Peppers",
+            "Eggplants",
+            "Mushroom"
+        ],
+        "priority": 5
+    },
+    {
+        "name": "Tool",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/tool.png",
+        "members": [
+            "Clock",
+            "Knife",
+            "Rolling Pin",
+            "Whisk",
+            "Sponge",
+            "Old Shoes"
+        ],
+        "priority": 1
+    },
+    {
+        "name": "Creepy",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/creepy.png",
+        "members": [
+            "Knife",
+            "Sponge",
+            "Dish Soap",
+            "Blue Cheese",
+            "Piranha",
+            "Crow",
+            "Rat",
+            "Bat",
+            "Bees",
+            "Old Shoes",
+            "Starfish",
+            "Frog"
+        ],
+        "priority": 2
+    },
+    {
+        "name": "Fruit",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/fruit.png",
+        "members": [
+            "Apples",
+            "Bananas",
+            "Pineapples",
+            "Lemons",
+            "Oranges"
+        ],
+        "priority": 5
+    },
+    {
+        "name": "Sour",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/sour.png",
+        "members": [
+            "Pineapples",
+            "Lemons",
+            "Oranges",
+            "Soda",
+            "Apple Cider Vinegar"
+        ],
+        "priority": 4
+    },
+    {
+        "name": "Meat",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/meat.png",
+        "members": [
+            "Bacon",
+            "Pork Ribs",
+            "Beef Steak",
+            "Chicken Breast",
+            "Pigeon",
+            "Crow",
+            "Rat",
+            "Bat",
+            "Duck",
+            "Frog"
+        ],
+        "priority": 4
+    },
+    {
+        "name": "Dairy",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/dairy.png",
+        "members": [
+            "Milk",
+            "Butter",
+            "Cheese",
+            "Blue Cheese",
+            "Ricotta Cheese",
+            "Yogurt"
+        ],
+        "priority": 7
+    },
+    {
+        "name": "Milks",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/milks.png",
+        "members": [
+            "Milk"
+        ],
+        "priority": 3
+    },
+    {
+        "name": "Cheeses",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/cheeses.png",
+        "members": [
+            "Cheese",
+            "Blue Cheese",
+            "Ricotta Cheese"
+        ],
+        "priority": 6
+    },
+    {
+        "name": "Seafood",
+        "is_tag": true,
+        "tags": [],
+        "auto_unlock": null,
+        "description": null,
+        "image": "images/ingredients/seafood.png",
+        "members": [
+            "Shrimp",
+            "Tuna",
+            "Salmon",
+            "Crab",
+            "Piranha",
+            "Oyster",
+            "Scallop",
+            "Lobster",
+            "Starfish",
+            "Octopus"
+        ],
+        "priority": 4
     }
 ]

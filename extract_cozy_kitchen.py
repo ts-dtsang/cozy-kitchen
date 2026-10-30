@@ -2,9 +2,9 @@
 
 Input:  data/src/cozy-kitchen.data.br
 Output: recipes.json      every recipe: name, category, dish type, ingredients, description, image
-        ingredients.json  every ingredient: name, tags, auto unlock, description, image
+        ingredients.json  every ingredient and every tag (a tag is listed like an ingredient, with "is_tag": true)
         translations.json every name -> {"name": {...}, "description": {...}} in the 15 languages of the game
-        data/images/      ingredients/*.png, and recipes/*.png when --bundles-dir is given
+        data/images/      ingredients/*.png (tag icons included), and recipes/*.png when --bundles-dir is given
 
 Pipeline: .data.br -> decompress -> unpack the UnityWebData archive -> read the DataRecipe object (Odin format)
 -> read the I2 Localization terms (names and descriptions in 15 languages) -> export the images
@@ -178,6 +178,11 @@ class GameAssets:
 
     def script_objects(self, class_name: str) -> Iterator[bytes]:
         """Yield the raw data of every MonoBehaviour whose script class is class_name."""
+        for _, raw in self.script_object_list(class_name):
+            yield raw
+
+    def script_object_list(self, class_name: str) -> Iterator[tuple[Any, bytes]]:
+        """Yield (object, raw data) of every MonoBehaviour whose script class is class_name."""
         for obj in self.env.objects:
             if obj.type.name != "MonoBehaviour":
                 continue
@@ -187,7 +192,7 @@ class GameAssets:
             # The m_Script PPtr starts at offset 16: int32 file id + int64 path id
             _, script_path_id = struct.unpack_from("<iq", raw, 16)
             if class_name in self.script_names.get(script_path_id, set()):
-                yield raw
+                yield obj, raw
 
 
 def read_blob(raw: bytes) -> bytes:
@@ -210,6 +215,58 @@ def find_recipe_blob(assets: GameAssets) -> bytes:
         # Guard against path id collisions: the real blob starts with this field name
         if BLOB_HEAD_MARKER in blob[:BLOB_HEAD_SIZE]:
             return blob
+
+    raise LookupError(f"No {RECIPE_SCRIPT_NAME} object found. The game may have changed its data format.")
+
+
+TAG_FIELD = "dicTagIngredients"  # tag -> ingredients that carry it
+TAG_ICON_FIELD = "dicTagIcon"  # tag -> {"$ext": n}, the n-th Unity object referenced by the DataRecipe object
+TAG_PRIORITY_FIELD = "dicTagPriority"
+MAX_REFERENCES = 10_000
+
+
+def read_references(raw: bytes) -> list[tuple[int, int]]:
+    """Return the Unity objects an Odin object points to, as (file id, path id) in {"$ext": n} order.
+
+    They are stored after the Odin byte array: int32 count, then one PPtr (int32 file id + int64 path id) each.
+    """
+    pos = MONOBEHAVIOUR_HEADER_SIZE
+    name_len = struct.unpack_from("<i", raw, pos)[0]
+    pos = align4(pos + 4 + name_len)
+    _, blob_len = struct.unpack_from("<ii", raw, pos)
+    pos = align4(pos + 8 + blob_len)
+    count = struct.unpack_from("<i", raw, pos)[0]
+    if not 0 <= count <= MAX_REFERENCES:
+        raise ValueError(f"Bad reference count {count} at offset {pos}")
+    pos += 4
+    return [struct.unpack_from("<iq", raw, pos + 12 * index) for index in range(count)]
+
+
+def find_tag_icons(assets: GameAssets, data: dict[str, Any]) -> dict[str, Any]:
+    """Map each tag to the Sprite object the game itself shows for it (DataRecipe.dicTagIcon)."""
+    for obj, raw in assets.script_object_list(RECIPE_SCRIPT_NAME):
+        try:
+            blob = read_blob(raw)
+            references = read_references(raw)
+        except (struct.error, ValueError):
+            continue
+        if BLOB_HEAD_MARKER not in blob[:BLOB_HEAD_SIZE]:
+            continue
+
+        icons: dict[str, Any] = {}
+        for tag, reference in dict_pairs(data, TAG_ICON_FIELD):
+            if not isinstance(reference, dict) or "$ext" not in reference:
+                continue
+            try:
+                file_id, path_id = references[reference["$ext"]]
+            except IndexError:
+                continue
+            if file_id != 0:  # 0 = the same file as the DataRecipe object, which is where the sprites are
+                continue
+            target = obj.assets_file.objects.get(path_id)
+            if target is not None and target.type.name in IMAGE_TYPES:
+                icons[tag] = target
+        return icons
 
     raise LookupError(f"No {RECIPE_SCRIPT_NAME} object found. The game may have changed its data format.")
 
@@ -691,6 +748,7 @@ def build_outputs(
     ingredients = [
         {
             "name": name,
+            "is_tag": False,
             "tags": config["lstTag"],
             "auto_unlock": config["autoUnlock"],
             "description": english_description(name),
@@ -698,6 +756,26 @@ def build_outputs(
         }
         for name, config in ingredient_configs.items()
     ]
+
+    # A tag means "any ingredient that carries it" and recipes list it like an ingredient, so it gets its own entry
+    tag_members = dict_pairs(data, TAG_FIELD)
+    clash = sorted(set(ingredient_configs) & {tag for tag, _ in tag_members})
+    if clash:
+        raise ValueError(f"These names are both an ingredient and a tag: {clash}")
+    tag_priorities = dict(dict_pairs(data, TAG_PRIORITY_FIELD))
+    for tag, members in tag_members:
+        ingredients.append(
+            {
+                "name": tag,
+                "is_tag": True,
+                "tags": [],
+                "auto_unlock": None,  # tags have no unlock setting of their own
+                "description": english_description(tag),
+                "image": ingredient_images.get(tag),
+                "members": members,
+                "priority": tag_priorities.get(tag),
+            }
+        )
 
     recipes: list[dict[str, Any]] = []
     for field, category in RECIPE_FIELDS.items():
@@ -781,8 +859,12 @@ def main() -> None:
 
         print("[6/7] Exporting the images")
         ingredient_names = [name for name, _ in dict_pairs(data, "dictIngredientConfigs")]
+        tag_names = [tag for tag, _ in dict_pairs(data, TAG_FIELD)]
         recipe_names = [recipe["name"] for field in RECIPE_FIELDS for _, recipe in dict_pairs(data, field)]
-        ingredient_images = export_images(index_images(assets.env), ingredient_names, args.images_dir, "ingredients")
+        # Tags are listed like ingredients, so their icons are exported into the same folder in the same pass
+        game_index = index_images(assets.env)
+        game_index.update({normalize(tag): [icon] for tag, icon in find_tag_icons(assets, data).items()})
+        ingredient_images = export_images(game_index, ingredient_names + tag_names, args.images_dir, "ingredients")
         recipe_images: dict[str, str] = {}
         if args.bundles_dir:
             bundles = UnityPy.load(str(args.bundles_dir))
@@ -815,16 +897,17 @@ def main() -> None:
     per_category = Counter(recipe["category"] for recipe in recipes)
     print(f"Done -> {args.out_dir}")
     print(f"  recipes.json: {len(recipes)} recipes {dict(per_category)}")
-    print(f"  ingredients.json: {len(ingredients)} ingredients")
+    tag_count = sum(1 for ingredient in ingredients if ingredient["is_tag"])
+    print(f"  ingredients.json: {len(ingredients) - tag_count} ingredients + {tag_count} tags")
     described_names = sum(1 for entry in translations.values() if any(entry["description"].values()))
     print(f"  translations.json: {len(translations)} entries, {described_names} with a description")
     print(
-        f"  images in {args.images_dir}: {len(ingredient_images)}/{len(ingredients)} ingredients, "
+        f"  images in {args.images_dir}: {len(ingredient_images)}/{len(ingredients)} ingredients and tags, "
         f"{len(recipe_images)}/{len(recipes)} recipes"
     )
-    no_image = [name for name in ingredient_names if name not in ingredient_images]
+    no_image = [name for name in ingredient_names + tag_names if name not in ingredient_images]
     if no_image:
-        print(f"  ingredients without an image: {no_image[:MAX_EXAMPLES]}")
+        print(f"  ingredients and tags without an image: {no_image[:MAX_EXAMPLES]}")
     if args.bundles_dir:
         no_image = [name for name in dict.fromkeys(recipe_names) if name not in recipe_images]
         if no_image:

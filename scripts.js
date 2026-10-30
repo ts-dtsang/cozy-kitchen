@@ -1,114 +1,209 @@
 "use strict";
 
-// Where the data files are. "ouput" matches the project's folder name.
-const DATA_DIR = "data/ouput/";
-// Image links in the JSON files are relative to the parent of the images folder, which is data/
-const IMAGE_BASE = "data/";
-const STORAGE_KEY = "cozy-game-kiwi:language";
+// =================================================================================================================
+// Configuration
+// =================================================================================================================
+
+// "ouput" matches the project's folder name
+const DATA_DIRECTORY = "data/ouput/";
+// Image paths in the JSON files are relative to the parent of the images folder, which is data/
+const IMAGE_BASE_PATH = "data/";
+const LANGUAGE_STORAGE_KEY = "cozy-game-kiwi:language";
 // Used when neither a saved choice nor the browser language matches a supported language
 const DEFAULT_LANGUAGE = "vi";
+// Used for interface texts that are missing in the selected language
+const FALLBACK_INTERFACE_LANGUAGE = "en";
 const CATEGORY_ORDER = ["normal", "dark_cuisine", "messy"];
+const STACKED_LAYOUT_MEDIA_QUERY = "(max-width: 900px)";
+const REDUCED_MOTION_MEDIA_QUERY = "(prefers-reduced-motion: reduce)";
 
-// Languages and interface texts live in translations.i18n (JSON). They are loaded at start-up by loadI18n():
+// Languages and interface texts live in translations.i18n (JSON). They are loaded at start-up by loadTranslations():
 //   { "<code>": { "label": "Name shown in the language menu", "ui": { ...interface texts... } }, ... }
 // The order of the file is the order of the language menu. To add a language, add one block to that file
 // (code = the one used in data/ouput/translations.json). Texts missing in a language fall back to English.
-const I18N_FILE = "translations.i18n";
-let LANGUAGES = [];
-let UI = {};
+const TRANSLATIONS_FILE = "translations.i18n";
 
-const state = {
-    lang: DEFAULT_LANGUAGE,
-    menuId: "",
-    category: "",
-    tab: "menus",
-    query: "",
-    selected: null,
+// How well a recipe matches the search words (a lower rank is listed first)
+const MatchRank = {
+    EXACT_NAME: 0,
+    NAME_STARTS_WITH_QUERY: 1,
+    NAME_CONTAINS_QUERY: 2,
+    NAME_CONTAINS_EVERY_WORD: 3,
+    INGREDIENTS_ONLY: 4,
 };
-const app = {
+
+// =================================================================================================================
+// State and page elements
+// =================================================================================================================
+
+let supportedLanguages = []; // [{ code, label }] in the order of the language menu
+let interfaceTexts = {}; // { "<language code>": { ...interface texts... } }
+
+// Everything that changes while the person uses the page
+const state = {
+    language: DEFAULT_LANGUAGE,
+    collectionId: "",
+    category: "",
+    ingredientGroupName: "",
+    activeTab: "collections",
+    searchQuery: "",
+    searchTokens: [],
+    searchResultIndices: [],
+    selectedRecipeIndex: null,
+    collator: new Intl.Collator("en"),
+    isReady: false,
+};
+
+// Everything loaded from the data files, plus lookups built from it
+const data = {
     recipes: [],
     ingredients: [],
-    menus: [],
+    collections: [],
     translations: null,
-    missing: [],
-    ingredientByName: new Map(),
+    missingFiles: [],
+    ingredientsByName: new Map(),
+    ingredientGroups: [],
     recipeIndexByName: new Map(),
-    recipeIndexByLowerName: new Map(),
-    indexes: new Map(),
-    allIndices: [],
-    results: [],
-    tokens: [],
-    collator: new Intl.Collator("en"),
-    ready: false,
+    recipeIndexByLowerCaseName: new Map(),
+    recipeIndicesByCategory: new Map(),
+    categoryOrder: [],
+    allRecipeIndices: [],
+    searchIndexByLanguage: new Map(),
 };
 
-const el = Object.fromEntries(
-    [
-        "language",
-        "search",
-        "menu",
-        "results",
-        "menu-recipes",
-        "menu-panel",
-        "category",
-        "category-recipes",
-        "category-panel",
-        "tab-menus",
-        "tab-categories",
-        "panel-menus",
-        "panel-categories",
-        "mix",
-        "legend",
-        "stat-ingredients",
-        "stat-recipes",
-        "stat-menus",
-    ].map((id) => [id, document.getElementById(id)]),
-);
+const getElementById = (id) => document.getElementById(id);
 
-// ---- Small helpers -------------------------------------------------------------------------------------------
+const elements = {
+    languageSelect: getElementById("language"),
+    searchInput: getElementById("search"),
+    searchResults: getElementById("search-results"),
 
-function h(tag, props = {}, ...children) {
-    const node = document.createElement(tag);
-    for (const [key, value] of Object.entries(props)) {
+    collectionSelect: getElementById("collection"),
+    collectionPanel: getElementById("collection-panel"),
+    collectionRecipes: getElementById("collection-recipes"),
+
+    categorySelect: getElementById("category"),
+    categoryPanel: getElementById("category-panel"),
+    categoryRecipes: getElementById("category-recipes"),
+
+    groupSelect: getElementById("group"),
+    groupPanel: getElementById("group-panel"),
+    groupMembers: getElementById("group-members"),
+
+    ingredientCount: getElementById("stat-ingredients"),
+    ingredientGroupCount: getElementById("stat-ingredient-groups"),
+    collectionCount: getElementById("stat-collections"),
+    recipeCount: getElementById("stat-recipes"),
+    categoryMix: getElementById("category-mix"),
+    categoryLegend: getElementById("category-legend"),
+};
+
+// The tabs of the right pane. Only the visible tab is drawn: a category can hold hundreds of rows.
+const tabs = {
+    collections: {
+        button: getElementById("tab-collections"),
+        panel: getElementById("panel-collections"),
+        render: renderCollectionTab,
+    },
+    categories: {
+        button: getElementById("tab-categories"),
+        panel: getElementById("panel-categories"),
+        render: renderCategoryTab,
+    },
+    groups: {
+        button: getElementById("tab-groups"),
+        panel: getElementById("panel-groups"),
+        render: renderIngredientGroupTab,
+    },
+};
+const tabNames = Object.keys(tabs);
+
+// =================================================================================================================
+// Small helpers
+// =================================================================================================================
+
+function createElement(tagName, attributes = {}, ...children) {
+    const node = document.createElement(tagName);
+    for (const [name, value] of Object.entries(attributes)) {
         if (value === undefined || value === null || value === false) continue;
-        if (key === "text") node.textContent = value;
-        else node.setAttribute(key, value === true ? "" : value);
+        if (name === "text") node.textContent = value;
+        else node.setAttribute(name, value === true ? "" : value);
     }
     node.append(...children.flat().filter((child) => child !== null && child !== undefined && child !== false));
     return node;
 }
 
-// The saved language, else the first browser language we support, else the default one
-function initialLanguage() {
-    const supported = (code) => LANGUAGES.some((language) => language.code === code);
+const formatNumber = (number) => new Intl.NumberFormat(state.language).format(number);
+
+const isIngredientGroup = (ingredient) => ingredient.is_tag === true;
+
+// ---- Language and interface texts ----------------------------------------------------------------------------
+
+const isSupportedLanguage = (code) => supportedLanguages.some((language) => language.code === code);
+
+function readSavedLanguage() {
     try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved && supported(saved)) return saved;
+        return localStorage.getItem(LANGUAGE_STORAGE_KEY);
     } catch {
-        /* storage can be unavailable */
+        return null; // storage can be unavailable
     }
-    for (const tag of navigator.languages || [navigator.language]) {
-        const code = String(tag).toLowerCase().split("-")[0];
-        if (supported(code)) return code;
+}
+
+function saveLanguage(code) {
+    try {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, code);
+    } catch {
+        // storage can be unavailable
     }
-    return supported(DEFAULT_LANGUAGE) ? DEFAULT_LANGUAGE : (LANGUAGES[0]?.code ?? "en");
 }
 
-const uiLanguage = () => (UI[state.lang] ? state.lang : "en");
+// The saved language, else the first browser language we support, else the default one
+function detectInitialLanguage() {
+    const savedLanguage = readSavedLanguage();
+    if (savedLanguage && isSupportedLanguage(savedLanguage)) return savedLanguage;
 
-function text(key, vars = {}) {
-    const template = UI[uiLanguage()]?.[key] ?? UI.en?.[key] ?? key;
-    return template.replace(/\{(\w+)\}/g, (_, name) => String(vars[name] ?? `{${name}}`));
+    for (const languageTag of navigator.languages || [navigator.language]) {
+        const code = String(languageTag).toLowerCase().split("-")[0];
+        if (isSupportedLanguage(code)) return code;
+    }
+    return isSupportedLanguage(DEFAULT_LANGUAGE) ? DEFAULT_LANGUAGE : (supportedLanguages[0]?.code ?? "en");
 }
 
-function categoryLabel(category) {
-    return UI[uiLanguage()]?.categories?.[category] ?? UI.en?.categories?.[category] ?? category;
+const getInterfaceLanguage = () => (interfaceTexts[state.language] ? state.language : FALLBACK_INTERFACE_LANGUAGE);
+
+function translate(key, variables = {}) {
+    const template =
+        interfaceTexts[getInterfaceLanguage()]?.[key] ?? interfaceTexts[FALLBACK_INTERFACE_LANGUAGE]?.[key] ?? key;
+    return template.replace(/\{(\w+)\}/g, (_, variableName) => String(variables[variableName] ?? `{${variableName}}`));
 }
 
-const formatNumber = (n) => new Intl.NumberFormat(state.lang).format(n);
+function translateCategory(category) {
+    return (
+        interfaceTexts[getInterfaceLanguage()]?.categories?.[category] ??
+        interfaceTexts[FALLBACK_INTERFACE_LANGUAGE]?.categories?.[category] ??
+        category
+    );
+}
+
+// ---- Names and descriptions in the selected language ---------------------------------------------------------
+
+function getLocalizedName(name, language = state.language) {
+    return data.translations?.[name]?.name?.[language] || name;
+}
+
+// Works for recipes and ingredients: both have a name and an optional description
+function getLocalizedDescription(entry) {
+    return data.translations?.[entry.name]?.description?.[state.language] || entry.description || "";
+}
+
+function getCollectionText(collection, field) {
+    return collection.translations?.[field]?.[state.language] || collection[field] || "";
+}
+
+// ---- Search text normalization -------------------------------------------------------------------------------
 
 // Search is case-insensitive and ignores accents, so "trung" finds "Trứng"
-function fold(value) {
+function normalizeText(value) {
     return value
         .toLowerCase()
         .normalize("NFD")
@@ -116,602 +211,754 @@ function fold(value) {
         .replace(/đ/g, "d");
 }
 
-// Like fold(), but also returns, for every folded character, where it came from in the original text
-function foldWithMap(value) {
-    let folded = "";
-    const map = [];
-    let position = 0;
-    for (const char of value) {
-        const piece = fold(char);
-        for (let i = 0; i < piece.length; i += 1) map.push(position);
-        folded += piece;
-        position += char.length;
+// Like normalizeText(), but also returns, for every normalized character, where it came from in the original text
+function normalizeTextWithPositions(value) {
+    let normalizedText = "";
+    const originalPositions = [];
+    let originalPosition = 0;
+    for (const character of value) {
+        const normalizedCharacter = normalizeText(character);
+        for (let offset = 0; offset < normalizedCharacter.length; offset += 1) {
+            originalPositions.push(originalPosition);
+        }
+        normalizedText += normalizedCharacter;
+        originalPosition += character.length;
     }
-    return { folded, map };
+    return { normalizedText, originalPositions };
 }
 
-function tokensOf(query) {
-    return fold(query).split(/\s+/).filter(Boolean);
+function splitIntoSearchTokens(query) {
+    return normalizeText(query).split(/\s+/).filter(Boolean);
+}
+
+// Ranges [start, end) of the original text where one of the tokens matches
+function findMatchRanges(originalText, tokens) {
+    const { normalizedText, originalPositions } = normalizeTextWithPositions(originalText);
+    const ranges = [];
+    for (const token of tokens) {
+        let matchStart = normalizedText.indexOf(token);
+        while (matchStart !== -1) {
+            const lastCharacterStart = originalPositions[matchStart + token.length - 1];
+            const lastCharacterLength = String.fromCodePoint(originalText.codePointAt(lastCharacterStart)).length;
+            ranges.push({ start: originalPositions[matchStart], end: lastCharacterStart + lastCharacterLength });
+            matchStart = normalizedText.indexOf(token, matchStart + token.length);
+        }
+    }
+    return ranges;
+}
+
+function mergeOverlappingRanges(ranges) {
+    const sortedRanges = [...ranges].sort((first, second) => first.start - second.start);
+    const mergedRanges = [{ ...sortedRanges[0] }];
+    for (const range of sortedRanges.slice(1)) {
+        const previousRange = mergedRanges[mergedRanges.length - 1];
+        if (range.start <= previousRange.end) previousRange.end = Math.max(previousRange.end, range.end);
+        else mergedRanges.push({ ...range });
+    }
+    return mergedRanges;
 }
 
 // The original text split into plain strings and <mark> elements around the matched tokens
-function highlighted(value, tokens) {
-    if (!tokens.length) return [value];
-    const { folded, map } = foldWithMap(value);
-    const ranges = [];
-    for (const token of tokens) {
-        let at = folded.indexOf(token);
-        while (at !== -1) {
-            const last = map[at + token.length - 1];
-            ranges.push([map[at], last + String.fromCodePoint(value.codePointAt(last)).length]);
-            at = folded.indexOf(token, at + token.length);
-        }
-    }
-    if (!ranges.length) return [value];
-    ranges.sort((a, b) => a[0] - b[0]);
-    const merged = [ranges[0]];
-    for (const [start, end] of ranges.slice(1)) {
-        const previous = merged[merged.length - 1];
-        if (start <= previous[1]) previous[1] = Math.max(previous[1], end);
-        else merged.push([start, end]);
-    }
+function highlightMatches(originalText, tokens) {
+    const ranges = tokens.length ? findMatchRanges(originalText, tokens) : [];
+    if (!ranges.length) return [originalText];
+
     const nodes = [];
     let cursor = 0;
-    for (const [start, end] of merged) {
-        if (start > cursor) nodes.push(value.slice(cursor, start));
-        nodes.push(h("mark", { text: value.slice(start, end) }));
+    for (const { start, end } of mergeOverlappingRanges(ranges)) {
+        if (start > cursor) nodes.push(originalText.slice(cursor, start));
+        nodes.push(createElement("mark", { text: originalText.slice(start, end) }));
         cursor = end;
     }
-    if (cursor < value.length) nodes.push(value.slice(cursor));
+    if (cursor < originalText.length) nodes.push(originalText.slice(cursor));
     return nodes;
 }
 
-// ---- Names and descriptions in the selected language ---------------------------------------------------------
+// =================================================================================================================
+// Loading
+// =================================================================================================================
 
-function nameOf(name, lang = state.lang) {
-    return app.translations?.[name]?.name?.[lang] || name;
+async function loadTranslations() {
+    const response = await fetch(TRANSLATIONS_FILE);
+    if (!response.ok) throw new Error(`${TRANSLATIONS_FILE}: HTTP ${response.status}`);
+    const translationsByLanguage = await response.json();
+
+    supportedLanguages = Object.entries(translationsByLanguage).map(([code, entry]) => ({
+        code,
+        label: entry.label ?? code,
+    }));
+    interfaceTexts = Object.fromEntries(
+        Object.entries(translationsByLanguage).map(([code, entry]) => [code, entry.ui ?? {}]),
+    );
 }
 
-function descriptionOf(recipe) {
-    return app.translations?.[recipe.name]?.description?.[state.lang] || recipe.description || "";
-}
-
-function menuText(menu, field) {
-    return menu.translations?.[field]?.[state.lang] || menu[field] || "";
-}
-
-// ---- Loading -------------------------------------------------------------------------------------------------
-
-async function loadI18n() {
-    const response = await fetch(I18N_FILE);
-    if (!response.ok) throw new Error(`${I18N_FILE}: HTTP ${response.status}`);
-    const data = await response.json();
-    LANGUAGES = Object.entries(data).map(([code, entry]) => ({ code, label: entry.label ?? code }));
-    UI = Object.fromEntries(Object.entries(data).map(([code, entry]) => [code, entry.ui ?? {}]));
-}
-
-async function fetchJson(file) {
-    const response = await fetch(DATA_DIR + file);
-    if (!response.ok) throw new Error(`${DATA_DIR}${file}: HTTP ${response.status}`);
+async function fetchDataFile(fileName) {
+    const response = await fetch(DATA_DIRECTORY + fileName);
+    if (!response.ok) throw new Error(`${DATA_DIRECTORY}${fileName}: HTTP ${response.status}`);
     return response.json();
 }
 
-async function loadData() {
-    const optional = async (file, fallback) => {
-        try {
-            return await fetchJson(file);
-        } catch {
-            app.missing.push(file);
-            return fallback;
-        }
-    };
-    app.recipes = await fetchJson("recipes.json");
-    [app.ingredients, app.menus, app.translations] = await Promise.all([
-        optional("ingredients.json", []),
-        optional("collections.json", []),
-        optional("translations.json", null),
-    ]);
-
-    app.menus.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    app.ingredientByName = new Map(app.ingredients.map((ingredient) => [ingredient.name, ingredient]));
-    app.categoryIndices = new Map();
-    app.recipes.forEach((recipe, index) => {
-        app.recipeIndexByName.set(recipe.name, index);
-        app.recipeIndexByLowerName.set(recipe.name.toLowerCase(), index);
-        if (!app.categoryIndices.has(recipe.category)) app.categoryIndices.set(recipe.category, []);
-        app.categoryIndices.get(recipe.category).push(index);
-    });
-    app.allIndices = app.recipes.map((_, index) => index);
-    app.categoryOrder = [
-        ...CATEGORY_ORDER.filter((c) => app.categoryIndices.has(c)),
-        ...[...app.categoryIndices.keys()].filter((c) => !CATEGORY_ORDER.includes(c)),
-    ];
+async function fetchOptionalDataFile(fileName, valueWhenMissing) {
+    try {
+        return await fetchDataFile(fileName);
+    } catch {
+        data.missingFiles.push(fileName);
+        return valueWhenMissing;
+    }
 }
 
-// ---- Search --------------------------------------------------------------------------------------------------
+// Lookups that are built once, right after loading
+function buildLookups() {
+    data.ingredientsByName = new Map(data.ingredients.map((ingredient) => [ingredient.name, ingredient]));
+    data.ingredientGroups = data.ingredients.filter(isIngredientGroup);
 
-// Per language: for every recipe, the folded name and the folded names of its ingredients (built on first use)
-function indexFor(lang) {
-    if (!app.indexes.has(lang)) {
-        app.indexes.set(
-            lang,
-            app.recipes.map((recipe) => ({
-                label: nameOf(recipe.name, lang),
-                name: fold(nameOf(recipe.name, lang)),
-                ingredients: fold(recipe.ingredients.map((ingredient) => nameOf(ingredient, lang)).join(" ")),
-            })),
+    data.recipes.forEach((recipe, recipeIndex) => {
+        data.recipeIndexByName.set(recipe.name, recipeIndex);
+        data.recipeIndexByLowerCaseName.set(recipe.name.toLowerCase(), recipeIndex);
+        if (!data.recipeIndicesByCategory.has(recipe.category)) data.recipeIndicesByCategory.set(recipe.category, []);
+        data.recipeIndicesByCategory.get(recipe.category).push(recipeIndex);
+    });
+    data.allRecipeIndices = data.recipes.map((_, recipeIndex) => recipeIndex);
+
+    const knownCategories = CATEGORY_ORDER.filter((category) => data.recipeIndicesByCategory.has(category));
+    const otherCategories = [...data.recipeIndicesByCategory.keys()].filter(
+        (category) => !CATEGORY_ORDER.includes(category),
+    );
+    data.categoryOrder = [...knownCategories, ...otherCategories];
+}
+
+async function loadData() {
+    data.recipes = await fetchDataFile("recipes.json");
+    [data.ingredients, data.collections, data.translations] = await Promise.all([
+        fetchOptionalDataFile("ingredients.json", []),
+        fetchOptionalDataFile("collections.json", []),
+        fetchOptionalDataFile("translations.json", null),
+    ]);
+    data.collections.sort((first, second) => (first.sort_order ?? 0) - (second.sort_order ?? 0));
+    buildLookups();
+}
+
+// =================================================================================================================
+// Search
+// =================================================================================================================
+
+// Per language: for every recipe, its label and the normalized name and ingredient names (built on first use)
+function getSearchIndex(language) {
+    if (!data.searchIndexByLanguage.has(language)) {
+        data.searchIndexByLanguage.set(
+            language,
+            data.recipes.map((recipe) => {
+                const label = getLocalizedName(recipe.name, language);
+                const ingredientNames = recipe.ingredients.map((name) => getLocalizedName(name, language));
+                return {
+                    label,
+                    normalizedName: normalizeText(label),
+                    normalizedIngredients: normalizeText(ingredientNames.join(" ")),
+                };
+            }),
         );
     }
-    return app.indexes.get(lang);
+    return data.searchIndexByLanguage.get(language);
 }
 
-function currentMenu() {
-    return app.menus.find((menu) => menu.id === state.menuId) ?? null;
-}
+const getRecipeLabel = (recipeIndex) => getSearchIndex(state.language)[recipeIndex].label;
 
-// Recipe indexes of a menu collection, in the order of the collection
-function menuIndices(menu) {
-    if (!menu) return [];
-    return menu.recipes
-        .map((name) => app.recipeIndexByName.get(name) ?? app.recipeIndexByLowerName.get(name.toLowerCase()))
-        .filter((index) => index !== undefined);
-}
-
-function runSearch() {
-    if (!app.tokens.length) return app.allIndices;
-
-    const index = indexFor(state.lang);
-    const whole = app.tokens.join(" ");
-    const scored = [];
-    for (const i of app.allIndices) {
-        const { name, ingredients } = index[i];
-        const haystack = `${name} ${ingredients}`;
-        if (!app.tokens.every((token) => haystack.includes(token))) continue;
-        let rank = 4; // only the ingredients match
-        if (name === whole) rank = 0;
-        else if (name.startsWith(whole)) rank = 1;
-        else if (name.includes(whole)) rank = 2;
-        else if (app.tokens.every((token) => name.includes(token))) rank = 3;
-        scored.push([rank, i]);
+function rankNameMatch(normalizedName, fullQuery) {
+    if (normalizedName === fullQuery) return MatchRank.EXACT_NAME;
+    if (normalizedName.startsWith(fullQuery)) return MatchRank.NAME_STARTS_WITH_QUERY;
+    if (normalizedName.includes(fullQuery)) return MatchRank.NAME_CONTAINS_QUERY;
+    if (state.searchTokens.every((token) => normalizedName.includes(token))) {
+        return MatchRank.NAME_CONTAINS_EVERY_WORD;
     }
-    scored.sort((a, b) => a[0] - b[0] || app.collator.compare(index[a[1]].label, index[b[1]].label));
-    return scored.map(([, i]) => i);
+    return MatchRank.INGREDIENTS_ONLY;
 }
 
-// ---- Rendering -----------------------------------------------------------------------------------------------
+function sortRecipeIndicesByName(recipeIndices) {
+    return [...recipeIndices].sort((first, second) =>
+        state.collator.compare(getRecipeLabel(first), getRecipeLabel(second)),
+    );
+}
 
-function placeholder(label) {
-    return h("span", {
+// Recipe indexes that contain every search word in their name or ingredients, best matches first
+function searchRecipes() {
+    if (!state.searchTokens.length) return data.allRecipeIndices;
+
+    const searchIndex = getSearchIndex(state.language);
+    const fullQuery = state.searchTokens.join(" ");
+    const matches = [];
+    for (const recipeIndex of data.allRecipeIndices) {
+        const { normalizedName, normalizedIngredients } = searchIndex[recipeIndex];
+        const searchableText = `${normalizedName} ${normalizedIngredients}`;
+        if (!state.searchTokens.every((token) => searchableText.includes(token))) continue;
+        matches.push({ recipeIndex, rank: rankNameMatch(normalizedName, fullQuery) });
+    }
+
+    matches.sort(
+        (first, second) =>
+            first.rank - second.rank ||
+            state.collator.compare(getRecipeLabel(first.recipeIndex), getRecipeLabel(second.recipeIndex)),
+    );
+    return matches.map((match) => match.recipeIndex);
+}
+
+// =================================================================================================================
+// Rendering: building blocks
+// =================================================================================================================
+
+function createPlaceholder(label) {
+    return createElement("span", {
         "aria-hidden": "true",
         text: Array.from(label)[0]?.toUpperCase() ?? "?",
     });
 }
 
-function picture(path) {
-    if (!path) return null;
-    return h("img", { src: IMAGE_BASE + path, alt: "", loading: "lazy", decoding: "async" });
+function createImage(imagePath, { removeOnError = false } = {}) {
+    if (!imagePath) return null;
+    const image = createElement("img", {
+        src: IMAGE_BASE_PATH + imagePath,
+        alt: "",
+        loading: "lazy",
+        decoding: "async",
+    });
+    if (removeOnError) image.addEventListener("error", () => image.remove());
+    return image;
 }
 
-function ingredientChip(name, tokens = []) {
-    const ingredient = app.ingredientByName.get(name);
-    const label = nameOf(name);
-    const image = ingredient ? picture(ingredient.image) : null;
-    if (image) image.addEventListener("error", () => image.remove());
-    return h(
+// A square picture that falls back to the first letter of the label when there is no picture or it fails to load
+function createThumbnail(imagePath, label) {
+    const thumbnail = createElement("div", { class: "thumb" });
+    const image = createImage(imagePath);
+    if (image) image.addEventListener("error", () => thumbnail.replaceChildren(createPlaceholder(label)));
+    thumbnail.append(image ?? createPlaceholder(label));
+    return thumbnail;
+}
+
+const createEmptyMessage = (message) => createElement("p", { class: "empty", text: message });
+
+function createList(items) {
+    return createElement("ul", { class: "list" }, items);
+}
+
+// Fills a <select>; each option is { value, label }
+function fillSelect(selectElement, options, selectedValue) {
+    selectElement.replaceChildren(
+        ...options.map(({ value, label }) => createElement("option", { value, lang: state.language, text: label })),
+    );
+    selectElement.value = selectedValue;
+}
+
+// The header box above a recipe list: a title, plus a picture and a description when there are any.
+// (replaceChildren() would turn a missing picture into the text "null", so only real elements are passed.)
+function showInfoPanel(panel, { imagePath = null, title, description = "", descriptionLanguage = null }) {
+    const image = createImage(imagePath, { removeOnError: true });
+    const titleElement = createElement("h3", { lang: state.language, text: title });
+    const descriptionElement = description
+        ? createElement("p", { lang: descriptionLanguage, text: description })
+        : null;
+
+    panel.hidden = false;
+    panel.classList.toggle("has-image", image !== null);
+    panel.replaceChildren(...[image, titleElement, descriptionElement].filter(Boolean));
+}
+
+// =================================================================================================================
+// Rendering: recipes (left pane and recipe lists)
+// =================================================================================================================
+
+// One ingredient of a recipe. A tag (Meat, Veggie, ...) means "any ingredient that has this tag": it is listed in
+// ingredients.json with "is_tag": true and its own icon, so it is drawn like an ingredient, with a dashed border.
+function createIngredientChip(ingredientName, tokens = []) {
+    const ingredient = data.ingredientsByName.get(ingredientName);
+    const isGroup = ingredient ? isIngredientGroup(ingredient) : false;
+    return createElement(
         "li",
         {
-            class: ingredient ? "chip" : "chip group",
-            title: ingredient ? null : text("ingredientGroup"),
+            class: isGroup ? "chip is-group" : "chip",
+            title: isGroup ? translate("ingredientGroup") : null,
         },
-        image,
-        h("span", { lang: state.lang }, highlighted(label, tokens)),
+        ingredient ? createImage(ingredient.image, { removeOnError: true }) : null,
+        createElement("span", { lang: state.language }, highlightMatches(getLocalizedName(ingredientName), tokens)),
     );
 }
 
-// Ingredients under a recipe in the results list: chips when some ingredient has a picture, else a plain line
-function ingredientLine(recipe, tokens) {
-    if (recipe.ingredients.some((name) => app.ingredientByName.get(name)?.image)) {
-        return h(
-            "ul",
-            { class: "chips" },
-            recipe.ingredients.map((name) => ingredientChip(name, tokens)),
-        );
-    }
-    return h(
-        "p",
-        { class: "inline-ingredients", lang: state.lang },
-        highlighted(recipe.ingredients.map((name) => nameOf(name)).join(", "), tokens),
+function createIngredientChips(recipe, tokens) {
+    return createElement(
+        "ul",
+        { class: "chips" },
+        recipe.ingredients.map((name) => createIngredientChip(name, tokens)),
     );
 }
 
-function thumbOf(recipe, label) {
-    const thumb = h("div", { class: "thumb" });
-    const image = picture(recipe.image);
-    if (image) {
-        image.addEventListener("error", () => thumb.replaceChildren(placeholder(label)));
-        thumb.append(image);
-    } else {
-        thumb.append(placeholder(label));
-    }
-    return thumb;
-}
-
-// A clickable row. Used in both panes; `tokens` highlights the search words, `withIngredients` adds the ingredient line.
-function recipeRow(index, { tokens = [], withIngredients = false } = {}) {
-    const recipe = app.recipes[index];
-    const label = indexFor(state.lang)[index].label;
-    const button = h(
+// A clickable row. Used in all lists; `tokens` highlights the search words,
+// `showIngredients` adds the ingredient chips.
+function createRecipeRow(recipeIndex, { tokens = [], showIngredients = false } = {}) {
+    const recipe = data.recipes[recipeIndex];
+    const label = getRecipeLabel(recipeIndex);
+    const button = createElement(
         "button",
         {
             type: "button",
             class: "recipe",
             "data-category": recipe.category,
-            "data-index": index,
-            "aria-current": state.selected === index ? "true" : null,
+            "data-recipe-index": recipeIndex,
+            "aria-current": state.selectedRecipeIndex === recipeIndex ? "true" : null,
         },
-        thumbOf(recipe, label),
-        h(
+        createThumbnail(recipe.image, label),
+        createElement(
             "span",
             {},
-            h(
+            createElement(
                 "span",
                 { class: "title-line" },
-                h("span", { class: "name", lang: state.lang }, highlighted(label, tokens)),
-                h("span", { class: "badge", text: categoryLabel(recipe.category) }),
+                createElement("span", { class: "name", lang: state.language }, highlightMatches(label, tokens)),
+                createElement("span", { class: "badge", text: translateCategory(recipe.category) }),
             ),
-            label !== recipe.name ? h("p", { class: "english", lang: "en", text: recipe.name }) : null,
-            withIngredients ? ingredientLine(recipe, tokens) : null,
+            showIngredients ? createIngredientChips(recipe, tokens) : null,
         ),
     );
-    return h("li", {}, button);
+    return createElement("li", {}, button);
 }
 
-function recipeDetail(index) {
-    const recipe = app.recipes[index];
-    const label = indexFor(state.lang)[index].label;
-    const description = descriptionOf(recipe);
-    return h(
+const createRecipeList = (recipeIndices) =>
+    createList(recipeIndices.map((recipeIndex) => createRecipeRow(recipeIndex, { showIngredients: true })));
+
+function createRecipeDetail(recipeIndex) {
+    const recipe = data.recipes[recipeIndex];
+    const label = getRecipeLabel(recipeIndex);
+    const description = getLocalizedDescription(recipe);
+    return createElement(
         "article",
         { class: "detail", "data-category": recipe.category },
-        h("button", {
+        createElement("button", {
             type: "button",
             class: "back",
             "data-back": "",
-            text: "← " + text("back"),
+            text: "← " + translate("back"),
         }),
-        h(
+        createElement(
             "div",
             { class: "detail-head" },
-            thumbOf(recipe, label),
-            h(
+            createThumbnail(recipe.image, label),
+            createElement(
                 "div",
                 {},
-                h("h3", { lang: state.lang, text: label }),
-                label !== recipe.name ? h("p", { class: "english", lang: "en", text: recipe.name }) : null,
-                h("span", { class: "badge", text: categoryLabel(recipe.category) }),
+                createElement("h3", { lang: state.language, text: label }),
+                createElement("span", { class: "badge", text: translateCategory(recipe.category) }),
             ),
         ),
-        description ? h("p", { class: "desc", lang: state.lang, text: description }) : null,
+        description ? createElement("p", { class: "description", lang: state.language, text: description }) : null,
         recipe.ingredients.length
-            ? h(
+            ? createElement(
                   "section",
                   {},
-                  h("h4", { text: text("ingredientsTitle") }),
-                  h(
-                      "ul",
-                      { class: "chips" },
-                      recipe.ingredients.map((name) => ingredientChip(name)),
-                  ),
+                  createElement("h4", { text: translate("ingredientsTitle") }),
+                  createIngredientChips(recipe, []),
               )
             : null,
     );
 }
 
 // Left frame: the list of matches, or the details of the selected recipe
-function renderResults() {
-    if (state.selected !== null) {
-        el.results.replaceChildren(recipeDetail(state.selected));
-        el.results.scrollTop = 0;
-        return;
-    }
-    el.results.replaceChildren(
-        app.results.length
-            ? h(
-                  "ul",
-                  { class: "list" },
-                  app.results.map((index) => recipeRow(index, { tokens: app.tokens, withIngredients: true })),
-              )
-            : h("p", {
-                  class: "empty",
-                  text: text("noResults", { query: state.query.trim() }),
-              }),
-    );
-}
-
-// Right pane: description of the collection and its recipes
-function renderMenu() {
-    const menu = currentMenu();
-    el["menu-panel"].hidden = !menu;
-    if (!menu) {
-        el["menu-recipes"].replaceChildren(h("p", { class: "empty", text: text("noMenus") }));
+function renderSearchResults() {
+    const frame = elements.searchResults;
+    if (state.selectedRecipeIndex !== null) {
+        frame.replaceChildren(createRecipeDetail(state.selectedRecipeIndex));
+        frame.scrollTop = 0;
         return;
     }
 
-    const image = picture(menu.image ?? menu.images?.splash ?? menu.images?.badge);
-    if (image) image.addEventListener("error", () => image.remove());
-    el["menu-panel"].classList.toggle("has-image", Boolean(image));
-    el["menu-panel"].replaceChildren(
-        ...[
-            image,
-            h("h3", { lang: state.lang, text: menuText(menu, "name") }),
-            menuText(menu, "description") ? h("p", { lang: state.lang, text: menuText(menu, "description") }) : null,
-        ].filter(Boolean),
-    );
-
-    const indices = menuIndices(menu);
-    el["menu-recipes"].replaceChildren(
-        indices.length
-            ? h(
-                  "ul",
-                  { class: "list" },
-                  indices.map((index) => recipeRow(index)),
-              )
-            : h("p", { class: "empty", text: text("menuEmpty") }),
-    );
-}
-
-function renderMenuSelect() {
-    el.menu.replaceChildren(
-        ...app.menus.map((menu) =>
-            h("option", {
-                value: menu.id,
-                lang: state.lang,
-                text: `${menuText(menu, "name")} (${menu.recipes.length})`,
-            }),
-        ),
-    );
-    el.menu.value = state.menuId;
-}
-
-// Right pane, second tab: the recipes of one category (sorted by name in the current language)
-function renderCategory() {
-    const indices = app.categoryIndices.get(state.category);
-    el["category-panel"].hidden = !indices;
-    if (!indices) {
-        el["category-recipes"].replaceChildren(h("p", { class: "empty", text: text("noCategories") }));
+    if (!state.searchResultIndices.length) {
+        frame.replaceChildren(createEmptyMessage(translate("noResults", { query: state.searchQuery.trim() })));
         return;
     }
-
-    el["category-panel"].replaceChildren(
-        h("h3", { lang: state.lang, text: categoryLabel(state.category) }),
-        h("p", {
-            text: text("categoryRecipes", { n: formatNumber(indices.length) }),
-        }),
-    );
-
-    const labels = indexFor(state.lang);
-    const sorted = [...indices].sort((a, b) => app.collator.compare(labels[a].label, labels[b].label));
-    el["category-recipes"].replaceChildren(
-        h(
-            "ul",
-            { class: "list" },
-            sorted.map((index) => recipeRow(index)),
-        ),
-    );
-}
-
-function renderCategorySelect() {
-    el.category.replaceChildren(
-        ...app.categoryOrder.map((category) =>
-            h("option", {
-                value: category,
-                lang: state.lang,
-                text: `${categoryLabel(category)} (${formatNumber(app.categoryIndices.get(category).length)})`,
-            }),
-        ),
-    );
-    el.category.value = state.category;
-}
-
-// Only the visible tab is drawn: a category can hold hundreds of rows
-function renderRight() {
-    if (state.tab === "menus") renderMenu();
-    else renderCategory();
-}
-
-function setTab(tab, { focus = false } = {}) {
-    state.tab = tab;
-    for (const id of ["menus", "categories"]) {
-        const button = el[`tab-${id}`];
-        button.setAttribute("aria-selected", String(id === tab));
-        button.tabIndex = id === tab ? 0 : -1;
-        el[`panel-${id}`].hidden = id !== tab;
-        if (focus && id === tab) button.focus();
-    }
-    if (app.ready) renderRight();
-}
-
-// Mark the selected recipe in both lists without re-rendering them
-function markSelected() {
-    for (const row of document.querySelectorAll(".recipe")) {
-        if (Number(row.dataset.index) === state.selected) row.setAttribute("aria-current", "true");
-        else row.removeAttribute("aria-current");
-    }
-}
-
-function selectRecipe(index) {
-    state.selected = index;
-    renderResults();
-    markSelected();
-    // When the panes are stacked (narrow screens) the details can be off screen: bring them into view
-    if (window.matchMedia("(max-width: 900px)").matches) {
-        const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        el.results.scrollIntoView({
-            block: "nearest",
-            behavior: calm ? "auto" : "smooth",
-        });
-    }
-}
-
-function renderStats() {
-    const order = app.categoryOrder;
-    const count = (category) => app.categoryIndices.get(category).length;
-
-    el["stat-ingredients"].textContent = app.missing.includes("ingredients.json")
-        ? "–"
-        : formatNumber(app.ingredients.length);
-    el["stat-recipes"].textContent = formatNumber(app.recipes.length);
-    el["stat-menus"].textContent = app.missing.includes("collections.json") ? "–" : formatNumber(app.menus.length);
-
-    el.mix.setAttribute("aria-label", order.map((c) => `${categoryLabel(c)} ${count(c)}`).join(", "));
-    el.mix.replaceChildren(
-        ...order.map((c) =>
-            h("span", {
-                "data-category": c,
-                style: `flex: ${count(c)} 1 0`,
-            }),
-        ),
-    );
-    el.legend.replaceChildren(
-        ...order.map((c) =>
-            h(
-                "li",
-                { "data-category": c },
-                h("i", { "aria-hidden": "true" }),
-                categoryLabel(c),
-                h("b", { text: formatNumber(count(c)) }),
+    frame.replaceChildren(
+        createList(
+            state.searchResultIndices.map((recipeIndex) =>
+                createRecipeRow(recipeIndex, { tokens: state.searchTokens, showIngredients: true }),
             ),
         ),
     );
 }
 
-function applyStaticText() {
-    document.documentElement.lang = uiLanguage();
-    for (const node of document.querySelectorAll("[data-i18n]")) node.textContent = text(node.dataset.i18n);
-    el.search.placeholder = text("searchPlaceholder");
+// Mark the selected recipe in every list without re-rendering them
+function markSelectedRecipe() {
+    for (const row of document.querySelectorAll(".recipe")) {
+        if (Number(row.dataset.recipeIndex) === state.selectedRecipeIndex) row.setAttribute("aria-current", "true");
+        else row.removeAttribute("aria-current");
+    }
+}
+
+function selectRecipe(recipeIndex) {
+    state.selectedRecipeIndex = recipeIndex;
+    renderSearchResults();
+    markSelectedRecipe();
+
+    // When the panes are stacked (narrow screens) the details can be off screen: bring them into view
+    if (window.matchMedia(STACKED_LAYOUT_MEDIA_QUERY).matches) {
+        const prefersReducedMotion = window.matchMedia(REDUCED_MOTION_MEDIA_QUERY).matches;
+        elements.searchResults.scrollIntoView({
+            block: "nearest",
+            behavior: prefersReducedMotion ? "auto" : "smooth",
+        });
+    }
+}
+
+function backToSearchResults() {
+    state.selectedRecipeIndex = null;
+    renderSearchResults();
+    markSelectedRecipe();
 }
 
 // Run the search again and redraw the left frame (a language change keeps the recipe being viewed)
-function refreshResults() {
-    app.tokens = tokensOf(state.query);
-    app.results = runSearch();
-    renderResults();
+function refreshSearchResults() {
+    state.searchTokens = splitIntoSearchTokens(state.searchQuery);
+    state.searchResultIndices = searchRecipes();
+    renderSearchResults();
 }
 
 // A new search always goes back to the list of matches
-function update() {
-    state.selected = null;
-    refreshResults();
+function startNewSearch() {
+    state.selectedRecipeIndex = null;
+    refreshSearchResults();
 }
 
-// One language for the interface and the search
-function changeLanguage(code) {
-    state.lang = code;
-    app.collator = new Intl.Collator(code);
-    el.language.value = code;
-    try {
-        localStorage.setItem(STORAGE_KEY, code);
-    } catch {
-        /* storage can be unavailable */
-    }
-    applyStaticText();
-    if (!app.ready) return;
-    renderStats();
-    renderMenuSelect();
-    renderCategorySelect();
-    refreshResults();
-    renderRight();
+// =================================================================================================================
+// Rendering: right pane (collections, categories, ingredient groups)
+// =================================================================================================================
+
+// ---- Collections ---------------------------------------------------------------------------------------------
+
+const findSelectedCollection = () =>
+    data.collections.find((collection) => collection.id === state.collectionId) ?? null;
+
+// Recipe indexes of a collection, in the order of the collection
+function getCollectionRecipeIndices(collection) {
+    return collection.recipes
+        .map(
+            (recipeName) =>
+                data.recipeIndexByName.get(recipeName) ?? data.recipeIndexByLowerCaseName.get(recipeName.toLowerCase()),
+        )
+        .filter((recipeIndex) => recipeIndex !== undefined);
 }
 
-// ---- Start ---------------------------------------------------------------------------------------------------
+function renderCollectionSelect() {
+    fillSelect(
+        elements.collectionSelect,
+        data.collections.map((collection) => ({
+            value: collection.id,
+            label: `${getCollectionText(collection, "name")} (${collection.recipes.length})`,
+        })),
+        state.collectionId,
+    );
+}
 
-async function start() {
-    try {
-        await loadI18n();
-    } catch (error) {
-        console.error(error);
-        el.results.replaceChildren(
-            h("p", {
-                class: "empty",
-                role: "alert",
-                text: `Couldn't load ${I18N_FILE}. Open this page through a web server (for example, run python3 -m http.server in the project folder) and check that the file exists.`,
-            }),
-        );
+function renderCollectionTab() {
+    const collection = findSelectedCollection();
+    elements.collectionPanel.hidden = !collection;
+    if (!collection) {
+        elements.collectionRecipes.replaceChildren(createEmptyMessage(translate("noMenus")));
         return;
     }
-    state.lang = initialLanguage();
 
-    el.language.replaceChildren(
-        ...LANGUAGES.map((language) =>
-            h("option", {
-                value: language.code,
-                lang: language.code,
-                text: language.label,
+    showInfoPanel(elements.collectionPanel, {
+        imagePath: collection.image ?? collection.images?.splash ?? collection.images?.badge,
+        title: getCollectionText(collection, "name"),
+        description: getCollectionText(collection, "description"),
+        descriptionLanguage: state.language,
+    });
+
+    const recipeIndices = getCollectionRecipeIndices(collection);
+    elements.collectionRecipes.replaceChildren(
+        recipeIndices.length ? createRecipeList(recipeIndices) : createEmptyMessage(translate("menuEmpty")),
+    );
+}
+
+// ---- Categories ----------------------------------------------------------------------------------------------
+
+const countRecipesInCategory = (category) => data.recipeIndicesByCategory.get(category).length;
+
+function renderCategorySelect() {
+    fillSelect(
+        elements.categorySelect,
+        data.categoryOrder.map((category) => ({
+            value: category,
+            label: `${translateCategory(category)} (${formatNumber(countRecipesInCategory(category))})`,
+        })),
+        state.category,
+    );
+}
+
+// The recipes of one category, sorted by name in the current language
+function renderCategoryTab() {
+    const recipeIndices = data.recipeIndicesByCategory.get(state.category);
+    elements.categoryPanel.hidden = !recipeIndices;
+    if (!recipeIndices) {
+        elements.categoryRecipes.replaceChildren(createEmptyMessage(translate("noCategories")));
+        return;
+    }
+
+    showInfoPanel(elements.categoryPanel, {
+        title: translateCategory(state.category),
+        description: translate("categoryRecipes", { n: formatNumber(recipeIndices.length) }),
+    });
+    elements.categoryRecipes.replaceChildren(createRecipeList(sortRecipeIndicesByName(recipeIndices)));
+}
+
+// ---- Ingredient groups ---------------------------------------------------------------------------------------
+
+// The ingredients listed in the "members" field of a group (names that are not in ingredients.json are skipped)
+function getGroupMembers(group) {
+    return (group.members ?? [])
+        .map((memberName) => data.ingredientsByName.get(memberName))
+        .filter((ingredient) => ingredient !== undefined);
+}
+
+const sortIngredientsByName = (ingredients) =>
+    [...ingredients].sort((first, second) =>
+        state.collator.compare(getLocalizedName(first.name), getLocalizedName(second.name)),
+    );
+
+function renderIngredientGroupSelect() {
+    const sortedGroups = sortIngredientsByName(data.ingredientGroups);
+    if (!sortedGroups.some((group) => group.name === state.ingredientGroupName)) {
+        state.ingredientGroupName = sortedGroups[0]?.name ?? "";
+    }
+    fillSelect(
+        elements.groupSelect,
+        sortedGroups.map((group) => ({
+            value: group.name,
+            label: `${getLocalizedName(group.name)} (${formatNumber(getGroupMembers(group).length)})`,
+        })),
+        state.ingredientGroupName,
+    );
+}
+
+function createGroupMemberRow(ingredient) {
+    const label = getLocalizedName(ingredient.name);
+    const description = getLocalizedDescription(ingredient);
+    return createElement(
+        "li",
+        { class: "member" },
+        createThumbnail(ingredient.image, label),
+        createElement(
+            "span",
+            {},
+            createElement("span", { class: "name", lang: state.language, text: label }),
+            description ? createElement("p", { class: "member-description", text: description }) : null,
+        ),
+    );
+}
+
+// The ingredients that belong to one group (from the "members" field of the group in ingredients.json)
+function renderIngredientGroupTab() {
+    const group = data.ingredientGroups.find((candidate) => candidate.name === state.ingredientGroupName);
+    elements.groupPanel.hidden = !group;
+    if (!group) {
+        elements.groupMembers.replaceChildren(createEmptyMessage(translate("noGroups")));
+        return;
+    }
+
+    const members = getGroupMembers(group);
+    showInfoPanel(elements.groupPanel, {
+        imagePath: group.image,
+        title: getLocalizedName(group.name),
+        description: translate("groupMembers", { n: formatNumber(members.length) }),
+    });
+    elements.groupMembers.replaceChildren(
+        members.length
+            ? createList(sortIngredientsByName(members).map(createGroupMemberRow))
+            : createEmptyMessage(translate("groupEmpty")),
+    );
+}
+
+// ---- Tabs ----------------------------------------------------------------------------------------------------
+
+const renderActiveTab = () => tabs[state.activeTab].render();
+
+function activateTab(activeTabName, { shouldFocus = false } = {}) {
+    state.activeTab = activeTabName;
+    for (const [tabName, tab] of Object.entries(tabs)) {
+        const isActive = tabName === activeTabName;
+        tab.button.setAttribute("aria-selected", String(isActive));
+        tab.button.tabIndex = isActive ? 0 : -1;
+        tab.panel.hidden = !isActive;
+        if (shouldFocus && isActive) tab.button.focus();
+    }
+    if (state.isReady) renderActiveTab();
+}
+
+// Left and right arrows move to the previous and next tab (wrapping around)
+function activateNeighborTab(direction) {
+    const nextIndex = (tabNames.indexOf(state.activeTab) + direction + tabNames.length) % tabNames.length;
+    activateTab(tabNames[nextIndex], { shouldFocus: true });
+}
+
+// =================================================================================================================
+// Rendering: totals and static texts
+// =================================================================================================================
+
+function renderStatistics() {
+    const hasIngredientsFile = !data.missingFiles.includes("ingredients.json");
+    const hasCollectionsFile = !data.missingFiles.includes("collections.json");
+    const formatCount = (count, isAvailable = true) => (isAvailable ? formatNumber(count) : "–");
+
+    // Groups are listed with the ingredients but they are not ingredients themselves, so they are not counted
+    const plainIngredientCount = data.ingredients.filter((ingredient) => !isIngredientGroup(ingredient)).length;
+    elements.ingredientCount.textContent = formatCount(plainIngredientCount, hasIngredientsFile);
+    elements.ingredientGroupCount.textContent = formatCount(data.ingredientGroups.length, hasIngredientsFile);
+    elements.collectionCount.textContent = formatCount(data.collections.length, hasCollectionsFile);
+    elements.recipeCount.textContent = formatCount(data.recipes.length);
+
+    elements.categoryMix.setAttribute(
+        "aria-label",
+        data.categoryOrder
+            .map((category) => `${translateCategory(category)} ${countRecipesInCategory(category)}`)
+            .join(", "),
+    );
+    elements.categoryMix.replaceChildren(
+        ...data.categoryOrder.map((category) =>
+            createElement("span", {
+                "data-category": category,
+                style: `flex: ${countRecipesInCategory(category)} 1 0`,
             }),
         ),
     );
-    el.language.value = state.lang;
-    app.collator = new Intl.Collator(state.lang);
-    applyStaticText();
+    elements.categoryLegend.replaceChildren(
+        ...data.categoryOrder.map((category) =>
+            createElement(
+                "li",
+                { "data-category": category },
+                createElement("i", { "aria-hidden": "true" }),
+                translateCategory(category),
+                createElement("b", { text: formatNumber(countRecipesInCategory(category)) }),
+            ),
+        ),
+    );
+}
 
-    el.language.addEventListener("change", () => changeLanguage(el.language.value));
-    el.search.addEventListener("input", () => {
-        state.query = el.search.value;
-        update();
+function applyStaticTexts() {
+    document.documentElement.lang = getInterfaceLanguage();
+    for (const node of document.querySelectorAll("[data-i18n]")) node.textContent = translate(node.dataset.i18n);
+    elements.searchInput.placeholder = translate("searchPlaceholder");
+}
+
+function renderAllSelects() {
+    renderCollectionSelect();
+    renderCategorySelect();
+    renderIngredientGroupSelect();
+}
+
+// One language for the interface and the search
+function changeLanguage(languageCode) {
+    state.language = languageCode;
+    state.collator = new Intl.Collator(languageCode);
+    elements.languageSelect.value = languageCode;
+    saveLanguage(languageCode);
+    applyStaticTexts();
+    if (!state.isReady) return;
+
+    renderStatistics();
+    renderAllSelects();
+    refreshSearchResults();
+    renderActiveTab();
+}
+
+// =================================================================================================================
+// Start
+// =================================================================================================================
+
+function showFatalError(message) {
+    elements.searchResults.replaceChildren(createElement("p", { class: "empty", role: "alert", text: message }));
+}
+
+function populateLanguageSelect() {
+    elements.languageSelect.replaceChildren(
+        ...supportedLanguages.map((language) =>
+            createElement("option", { value: language.code, lang: language.code, text: language.label }),
+        ),
+    );
+    elements.languageSelect.value = state.language;
+}
+
+function registerEventListeners() {
+    elements.languageSelect.addEventListener("change", () => changeLanguage(elements.languageSelect.value));
+
+    elements.searchInput.addEventListener("input", () => {
+        state.searchQuery = elements.searchInput.value;
+        startNewSearch();
     });
-    el.menu.addEventListener("change", () => {
-        state.menuId = el.menu.value;
-        renderMenu();
+
+    elements.collectionSelect.addEventListener("change", () => {
+        state.collectionId = elements.collectionSelect.value;
+        renderCollectionTab();
     });
-    el.category.addEventListener("change", () => {
-        state.category = el.category.value;
-        renderCategory();
+    elements.categorySelect.addEventListener("change", () => {
+        state.category = elements.categorySelect.value;
+        renderCategoryTab();
     });
-    for (const button of [el["tab-menus"], el["tab-categories"]]) {
-        button.addEventListener("click", () => setTab(button.dataset.tab));
-        button.addEventListener("keydown", (event) => {
+    elements.groupSelect.addEventListener("change", () => {
+        state.ingredientGroupName = elements.groupSelect.value;
+        renderIngredientGroupTab();
+    });
+
+    for (const [tabName, tab] of Object.entries(tabs)) {
+        tab.button.addEventListener("click", () => activateTab(tabName));
+        tab.button.addEventListener("keydown", (event) => {
             if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
             event.preventDefault();
-            setTab(state.tab === "menus" ? "categories" : "menus", { focus: true });
+            activateNeighborTab(event.key === "ArrowRight" ? 1 : -1);
         });
     }
+
     // One handler per list (the rows are re-created on every render)
-    for (const pane of [el.results, el["menu-recipes"], el["category-recipes"]]) {
-        pane.addEventListener("click", (event) => {
+    for (const recipeList of [elements.searchResults, elements.collectionRecipes, elements.categoryRecipes]) {
+        recipeList.addEventListener("click", (event) => {
             if (event.target.closest("[data-back]")) {
-                state.selected = null;
-                renderResults();
-                markSelected();
+                backToSearchResults();
                 return;
             }
             const row = event.target.closest(".recipe");
-            if (row) selectRecipe(Number(row.dataset.index));
+            if (row) selectRecipe(Number(row.dataset.recipeIndex));
         });
     }
+}
+
+async function start() {
+    try {
+        await loadTranslations();
+    } catch (error) {
+        console.error(error);
+        showFatalError(
+            `Couldn't load ${TRANSLATIONS_FILE}. Open this page through a web server ` +
+                "(for example, run python3 -m http.server in the project folder) and check that the file exists.",
+        );
+        return;
+    }
+
+    state.language = detectInitialLanguage();
+    state.collator = new Intl.Collator(state.language);
+    populateLanguageSelect();
+    applyStaticTexts();
+    registerEventListeners();
 
     try {
         await loadData();
     } catch (error) {
-        el.results.replaceChildren(
-            h("p", {
-                class: "empty",
-                role: "alert",
-                text: text("loadError", { path: `${DATA_DIR}recipes.json` }),
-            }),
-        );
         console.error(error);
+        showFatalError(translate("loadError", { path: `${DATA_DIRECTORY}recipes.json` }));
         return;
     }
 
-    app.ready = true;
-    state.menuId = app.menus[0]?.id ?? "";
-    state.category = app.categoryOrder[0] ?? "";
-    renderStats();
-    renderMenuSelect();
-    renderCategorySelect();
-    update();
-    renderRight();
-    requestAnimationFrame(() => requestAnimationFrame(() => el.mix.classList.add("is-in")));
+    state.isReady = true;
+    state.collectionId = data.collections[0]?.id ?? "";
+    state.category = data.categoryOrder[0] ?? "";
+    renderStatistics();
+    renderAllSelects();
+    startNewSearch();
+    renderActiveTab();
+
+    // Two frames later, so the browser has drawn the empty bar before it starts to fill
+    requestAnimationFrame(() => requestAnimationFrame(() => elements.categoryMix.classList.add("is-in")));
 }
 
 start();
