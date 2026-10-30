@@ -1,29 +1,29 @@
 # Cozy Kitchen Wiki
 
-Bộ công cụ trích xuất công thức, nguyên liệu, bản dịch (15 ngôn ngữ) và hình ảnh từ game **Cozy Kitchen** (Unity WebGL).
+A toolkit for extracting recipes, ingredients, translations (15 languages), and images from the game **Cozy Kitchen** (Unity WebGL).
 
 * **Demo / Build:** [ts-dtsang.github.io/cozy-kitchen](https://ts-dtsang.github.io/cozy-kitchen/)
-* **Local:** python3 -m http.server 8090
-  * http://localhost:8090/
+* **Local Preview:** `python3 -m http.server 8090`
+  * [http://localhost:8090/](http://localhost:8090/)
 
 ---
 
-## 📁 Cấu trúc thư mục
+## 📁 Project Structure
 
 ```text
 .
-├── index.html, styles.css, scripts.js   # Giao diện hiển thị
-├── run.sh                               # Script chạy toàn bộ pipeline
-├── build_image_bundles.py               # B1: Lấy danh sách bundle từ catalog
-├── download_bundles.py                  # B2: Tải asset bundles
-├── extract_cozy_kitchen.py              # B3: Trích xuất JSON & ảnh
+├── index.html, styles.css, scripts.js   # Web UI
+├── run.sh                               # Pipeline runner script
+├── build_image_bundles.py               # Step 1: Parse bundle list from catalog
+├── download_bundles.py                  # Step 2: Download asset bundles
+├── extract_cozy_kitchen.py              # Step 3: Extract JSON data and images
 └── data/
-    ├── src/                             # [Đầu vào thủ công]
-    │   ├── catalog.bin                  # Catalog bundle
-    │   └── cozy-kitchen.data.br         # Asset data chính của game
-    ├── bundles/                         # Bundle tải về (ảnh recipes, collections)
-    ├── images/                          # Ảnh PNG sau trích xuất
-    └── ouput/                           # JSON kết quả
+    ├── src/                             # [Manual inputs]
+    │   ├── catalog.bin                  # Bundle catalog
+    │   └── cozy-kitchen.data.br         # Game asset data
+    ├── bundles/                         # Downloaded asset bundles (recipes, collections)
+    ├── images/                          # Extracted PNG images
+    └── ouput/                           # Generated JSON outputs
         ├── recipes.json
         ├── ingredients.json
         ├── translations.json
@@ -32,63 +32,65 @@ Bộ công cụ trích xuất công thức, nguyên liệu, bản dịch (15 ng�
 
 ---
 
-## ⚙️ Yêu cầu & Cài đặt
+## ⚙️ Requirements & Installation
 
 - **Python**: `>= 3.10`
-- **Thư viện**:
+- **Dependencies**:
   ```bash
   pip install -r requirements.txt
   ```
 
 ---
 
-## 📥 Chuẩn bị dữ liệu đầu vào
+## 📥 Input Files Preparation
 
-1. `data/src/cozy-kitchen.data.br`: File build chính (`<hash>.data.br`).
-2. `data/src/catalog.bin`: File catalog dùng để tải bundle.
+Download the following two files manually via your browser's Developer Tools (Press `F12` → **Network** tab while loading the game):
+
+1. `data/src/cozy-kitchen.data.br`: Main build asset file (`<hash>.data.br`).
+2. `data/src/catalog.bin`: Catalog file used to resolve asset bundles.
 
 ---
 
-## 🚀 Hướng dẫn chạy
+## 🚀 Usage
 
 ```bash
 chmod +x run.sh
 
-# Chạy toàn bộ quy trình (B1 → B3)
+# Run the complete pipeline (Steps 1 → 3)
 ./run.sh
 
-# Hoặc chạy lẻ từng bước
+# Or run individual steps
 ./run.sh extract
 ./run.sh build download
 ```
 
-### Biến môi trường tùy chọn
+### Optional Environment Variables
 
-| Biến | Mặc định | Mô tả |
+| Variable | Default | Description |
 | :--- | :--- | :--- |
-| `DATA_FILE` | `data/src/cozy-kitchen.data.br` | Đường dẫn file data |
-| `BUNDLES_DIR` | `data/bundles` | Nơi lưu / đọc bundle |
-| `EXTRACT_ARGS` | *(trống)* | Tham số thêm cho bước trích xuất (vd: `--out-dir data/output`) |
+| `DATA_FILE` | `data/src/cozy-kitchen.data.br` | Path to the game data file |
+| `BUNDLES_DIR` | `data/bundles` | Directory to store/load downloaded bundles |
+| `EXTRACT_ARGS` | *(empty)* | Extra arguments passed to the extraction script (e.g., `--out-dir data/output`) |
 
-*Ví dụ:*
+*Example:*
 ```bash
 EXTRACT_ARGS="--out-dir data/output" ./run.sh extract
 ```
 
 ---
 
-## 📊 Dữ liệu đầu ra (`data/ouput/`)
+## 📊 Extracted Outputs (`data/ouput/`)
 
-- **`recipes.json`**: Món ăn (`name`, `category`, `dish_type`, `ingredients`, `image`).
-- **`ingredients.json`**: Nguyên liệu (`name`, `tags`, `auto_unlock`, `image`).
-- **`translations.json`**: Bản dịch tên và mô tả bằng 15 ngôn ngữ (`en`, `vi`, `id`, `ms`, `th`, `ru`, `hi`, `de`, `fr`, `es`, `it`, `tr`, `ko`, `ja`, `zh`).
-- **`menu_collections.json`**: Thông tin bộ sưu tập món từ Google Sheet.
-- **`data/images/`**: Toàn bộ icon nguyên liệu (`ingredients/`), món ăn (`recipes/`) và huy hiệu/ảnh menu (`menu_collections/`).
+- **`recipes.json`**: Dish recipes (`name`, `category`, `dish_type`, `ingredients`, `image`).
+- **`ingredients.json`**: Ingredients & ingredient tags (`name`, `tags`, `auto_unlock`, `image`).
+- **`translations.json`**: Multilingual names and descriptions across 15 languages (`en`, `vi`, `id`, `ms`, `th`, `ru`, `hi`, `de`, `fr`, `es`, `it`, `tr`, `ko`, `ja`, `zh`).
+- **`menu_collections.json`**: Menu collections data fetched from the game's Google Sheets source.
+- **`data/images/`**: Extracted PNG icons for ingredients (`ingredients/`), recipes (`recipes/`), and menu badges/splash art (`menu_collections/`).
 
 ---
 
-## ⚠️ Xử lý sự cố nhanh
+## ⚠️ Troubleshooting
 
-- **Thiếu ảnh món/menu**: Kiểm tra lại bước tải bundle (`download_bundles.py`) vào `data/bundles/`.
-- **Lỗi tải Google Sheet (`could not download...`)**: Tải CSV thủ công rồi truyền cờ `--menu-csv <file.csv>` vào script trích xuất.
-- **Game cập nhật**: Tải lại `cozy-kitchen.data.br` & `catalog.bin`, dọn thư mục `data/bundles/`, sau đó chạy lại `./run.sh`.
+- **Missing recipe or menu images**: Ensure bundles were downloaded properly into `data/bundles/` via `download_bundles.py`.
+- **Google Sheet download error (`could not download...`)**: Save the sheet as a CSV file manually and supply it with `--menu-csv <file.csv>`.
+- **Game updates**: Re-download `cozy-kitchen.data.br` and `catalog.bin`, clear or update `data/bundles/`, then rerun `./run.sh`.
